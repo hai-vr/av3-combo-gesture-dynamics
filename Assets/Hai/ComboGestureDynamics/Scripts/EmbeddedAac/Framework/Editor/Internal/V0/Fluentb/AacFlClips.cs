@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hai.Cge2Aac.Framework.Editor.Internal.V0.Fluentb;
 using Hai.ComboGestureDynamics.Scripts.EmbeddedAac.Framework.Components;
-using Hai.ComboGestureDynamics.Scripts.EmbeddedAac.Framework.Editor.Internal.V0;
 using UnityEditor;
 using UnityEngine;
 
-namespace Hai.Cge2Aac.Framework.Editor.Internal.V0.Fluentb
+namespace Hai.ComboGestureDynamics.Scripts.EmbeddedAac.Framework.Editor.Internal.V0.Fluentb
 {
     internal readonly struct AacFlClip
     {
@@ -132,6 +132,17 @@ namespace Hai.Cge2Aac.Framework.Editor.Internal.V0.Fluentb
         {
             _component = component;
             Clip = clip;
+        }
+
+        public AacFlSettingCurve AnimatingAnimator(AacFlParameter floatParameter)
+        {
+            var binding = new EditorCurveBinding
+            {
+                path = "",
+                type = typeof(Animator),
+                propertyName = floatParameter.Name
+            };
+            return new AacFlSettingCurve(Clip, new[] {binding});
         }
 
         public AacFlSettingCurve Animates(string path, Type type, string propertyName)
