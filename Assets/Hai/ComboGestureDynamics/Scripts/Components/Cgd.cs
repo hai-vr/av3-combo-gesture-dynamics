@@ -98,7 +98,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             [Serializable]
             public enum FloatOperation
             {
-                Equal, NotEqual, StrictlyGreaterThan, StrictlyLessThan
+                StrictlyGreaterThan, StrictlyLessThan
             }
         }
 

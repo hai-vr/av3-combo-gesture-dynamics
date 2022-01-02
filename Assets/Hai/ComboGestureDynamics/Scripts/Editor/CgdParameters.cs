@@ -1,4 +1,6 @@
-﻿namespace Hai.ComboGestureDynamics.Scripts.Editor
+﻿using Hai.ComboGestureDynamics.Scripts.Components;
+
+namespace Hai.ComboGestureDynamics.Scripts.Editor
 {
     public class CgdParameters
     {
@@ -18,5 +20,11 @@
         public string ShapeToLow => $"{_prefix}_ShapeToLow";
         public string DurationToHigh => $"{_prefix}_DurationToHigh";
         public string DurationToLow => $"{_prefix}_DurationToLow";
+        public string DefaultMoodSelector => $"{_prefix}_DefaultMoodSelector";
+
+        public string SpecificMoodSelector(Cgd.SpecificMoodSelector specificMoodSelector)
+        {
+            return specificMoodSelector.moodSelector.selectorName;
+        }
     }
 }
