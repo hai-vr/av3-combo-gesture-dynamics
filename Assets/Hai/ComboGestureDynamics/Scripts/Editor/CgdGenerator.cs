@@ -1,27 +1,27 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.EmbeddedAac.Framework.Editor.Internal.V0;
-using UnityEngine;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor
 {
     public class CgdGenerator
     {
-        private readonly List<Motion> motions;
+        private readonly CgdSys.Activation[] _activations;
+        private readonly CgdParameters _cgdParameters;
         private readonly AacV0.AacFlBase<CgdController> _aac;
-        private readonly CgdParameters parameters;
 
-        internal CgdGenerator(List<Motion> motions, CgdParameters parameters)
+        internal CgdGenerator(CgdSys.Activation[] activations, CgdParameters cgdParameters)
         {
-            this.motions = motions.ToList();
-            this.parameters = parameters;
+            _activations = activations;
+            _cgdParameters = cgdParameters;
             _aac = AacV0.Using(new CgdController());
         }
 
-        public void Generate()
+        internal void Generate()
         {
-            new CgdExpressionsLayer(_aac, parameters, motions).Generate();
-            new CgdTweeningLayer(_aac, parameters).Generate();
+            var orderedCompiledEffects = _activations.Select(activation => activation.compiledEffect).Distinct().ToArray();
+            new CgdExpressionsLayer(_aac, _cgdParameters, orderedCompiledEffects).GenerateFX();
+            new CgdTweeningLayer(_aac, _cgdParameters).GenerateFX();
+            new CgdActivationsLayer(_aac, _cgdParameters, _activations).GenerateFX();
         }
     }
 }

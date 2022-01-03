@@ -21,6 +21,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         public string DurationToHigh => $"{_prefix}_DurationToHigh";
         public string DurationToLow => $"{_prefix}_DurationToLow";
         public string DefaultMoodSelector => $"{_prefix}_DefaultMoodSelector";
+        public string IsLeftEyeClosed => $"{_prefix}_IsLeftEyeClosed";
 
         public string SpecificMoodSelector(Cgd.SpecificMoodSelector specificMoodSelector)
         {

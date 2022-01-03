@@ -17,7 +17,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             _parameters = parameters;
         }
 
-        public void Generate()
+        public void GenerateFX()
         {
             var layer = _aac.CreateSupportingFxLayer("Tweening");
             var tweeningParam = layer.FloatParameter(_parameters.Tweening);

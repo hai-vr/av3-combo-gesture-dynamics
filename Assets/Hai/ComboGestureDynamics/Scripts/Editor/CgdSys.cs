@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Animations;
+using UnityEngine;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor
 {
@@ -7,7 +8,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         public class System
         {
             public Activation[] activations;
-            public CompiledEffect[] compiledEffects;
             public AvatarMask fxMask;
             public AvatarMask gestureMask;
         }
@@ -94,6 +94,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         internal class CompiledMotion
         {
+            public Motion universal;
             public Motion fx;
             public Motion gesture;
         }
