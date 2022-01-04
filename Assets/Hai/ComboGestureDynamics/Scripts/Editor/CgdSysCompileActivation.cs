@@ -22,6 +22,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             var mutableActivations = new List<CgdSys.Activation>();
             var currentTweening = Remap(rootRule.tweening);
 
+            // FIXME: Maybe parts should be removed at the last step...?
             var whenFirstPartCreateDenyList = isFirstPart ? _cgd.secondaryParts.SelectMany(cgdPart => cgdPart.acceptedProperties).Distinct().ToArray() : null;
             var compiledEffect = new CgdSysCompileEffect(rootRule.effectBehaviour, part, null, whenFirstPartCreateDenyList, _cgdParameters).Compile();
 
@@ -30,7 +31,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 var rule = child.GetComponent<CgdRule>();
                 if (rule == null) continue;
 
-                var activations = FlattenRulesBelongingToPart(rule, part, currentTweening, new CgdSys.ICondition[0], compiledEffect);
+                var activations = FlattenRulesBelongingToPart(rule, part, currentTweening, new CgdSys.ICondition[0], compiledEffect, whenFirstPartCreateDenyList);
                 mutableActivations.AddRange(activations);
             }
 
@@ -44,11 +45,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             return mutableActivations.ToArray();
         }
 
-        private CgdSys.Activation[] FlattenRulesBelongingToPart(CgdRule currentRule, CgdPart part, CgdSys.Tweening inheritedTweening, CgdSys.ICondition[] inheritedConditions, CgdSys.CompiledEffect previousEffect)
+        private CgdSys.Activation[] FlattenRulesBelongingToPart(CgdRule currentRule, CgdPart part, CgdSys.Tweening inheritedTweening, CgdSys.ICondition[] inheritedConditions, CgdSys.CompiledEffect previousEffect, Cgd.PropertyMask[] whenFirstPartCreateDenyList)
         {
             var mutableActivations = new List<CgdSys.Activation>();
 
-            var compiledEffect = new CgdSysCompileEffect(currentRule.effectBehaviour, part, previousEffect, null, _cgdParameters).Compile();
+            var compiledEffect = new CgdSysCompileEffect(currentRule.effectBehaviour, part, previousEffect, whenFirstPartCreateDenyList, _cgdParameters).Compile();
 
             var currentTweening = currentRule.tweeningType == Cgd.TweeningType.Inherited ? inheritedTweening : Remap(currentRule.tweening);
             var currentConditions = BuildConditions(currentRule, inheritedConditions);
@@ -58,7 +59,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 var childRule = child.GetComponent<CgdRule>();
                 if (childRule == null) continue;
 
-                mutableActivations.AddRange(FlattenRulesBelongingToPart(childRule, part, currentTweening, inheritedConditions, compiledEffect));
+                mutableActivations.AddRange(FlattenRulesBelongingToPart(childRule, part, currentTweening, inheritedConditions, compiledEffect, whenFirstPartCreateDenyList));
             }
 
             if (currentRule.parts.Length == 0 || currentRule.parts.Contains(part))
@@ -322,6 +323,8 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             switch (shape)
             {
                 case Cgd.Shape.Linear: return CgdSys.Shape.Linear;
+                case Cgd.Shape.EaseInEaseOut: return CgdSys.Shape.EaseInEaseOut;
+                case Cgd.Shape.AttackInEaseOut: return CgdSys.Shape.AttackInEaseOut;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(shape), shape, null);
             }

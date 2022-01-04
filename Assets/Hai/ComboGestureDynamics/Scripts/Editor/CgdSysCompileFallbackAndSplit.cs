@@ -16,7 +16,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         {
             _cgd = cgd;
             _activations = activations;
-            throw new NotImplementedException();
         }
 
         public void MutateAnimations()
@@ -41,6 +40,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             return activations
                 .Select(activation => activation.compiledEffect.compiledMotion.universal)
                 .SelectMany(FindAllCurveBindingsOf)
+                .Distinct()
                 .ToArray();
         }
 

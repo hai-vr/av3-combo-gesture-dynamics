@@ -16,17 +16,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         public void Compile()
         {
-            var systems = DynamicsToSystems();
+            var parts = new[] {_cgd.mainPart}.Concat(_cgd.secondaryParts).ToArray();
+            var systems = parts.Select((part, index) => ConvertPartToSystem(part, index == 0)).ToArray();
             foreach (var system in systems)
             {
-                new CgdGenerator(system.activations, _cgdParameters).Generate();
+                new CgdGenerator(_cgd.avatar, system.activations, _cgdParameters).Generate();
             }
-        }
-
-        private CgdSys.System[] DynamicsToSystems()
-        {
-            var parts = new[] {_cgd.mainPart}.Concat(_cgd.secondaryParts).ToArray();
-            return parts.Select((part, index) => ConvertPartToSystem(part, index == 0)).ToArray();
         }
 
         private CgdSys.System ConvertPartToSystem(CgdPart part, bool isFirstPart)

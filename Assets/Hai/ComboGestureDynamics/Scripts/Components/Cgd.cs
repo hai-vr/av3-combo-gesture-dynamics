@@ -225,7 +225,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public enum Shape
         {
-            Linear
+            Linear,
+            EaseInEaseOut,
+            AttackInEaseOut
         }
 
         [Serializable]

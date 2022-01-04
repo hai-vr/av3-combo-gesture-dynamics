@@ -335,6 +335,13 @@ namespace Hai.ComboGestureDynamics.Scripts.EmbeddedAac.Framework.Editor.Internal
             return this;
         }
 
+        public AacFlSettingKeyframes Tangent(float timeInUnit, float value, float tangent)
+        {
+            _mutatedKeyframes.Add(new Keyframe(AsSeconds(timeInUnit), value, tangent, tangent));
+
+            return this;
+        }
+
         public AacFlSettingKeyframes Linear(float timeInUnit, float value)
         {
             float valueEnd = value;

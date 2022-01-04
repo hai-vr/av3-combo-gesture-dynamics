@@ -119,6 +119,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .Where(effect => effect.effect.effectType == Cgd.EffectType.Regular) // Regular can only inherit Regular effects
                 .Where(effect => !visitedRegular.Contains(effect.effect.regular)) // Prevent circular references
                 .Select(effect => CompileRegular(effect.effect.regular, effect.rejectedProperties, visitedRegular.Concat(new[] {regular}).ToArray()))
+                .DefaultIfEmpty(new CgdSys.CompiledMotion
+                {
+                    universal = new AnimationClip()
+                })
                 .Aggregate((left, right) => new CgdSys.CompiledMotion
                 {
                     universal = NewClipMerging(left.universal, right.universal, rejectedProperties),

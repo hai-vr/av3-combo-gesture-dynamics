@@ -65,7 +65,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         public enum Shape
         {
-            Linear
+            Linear,
+            EaseInEaseOut,
+            AttackInEaseOut
         }
 
         public enum Importance

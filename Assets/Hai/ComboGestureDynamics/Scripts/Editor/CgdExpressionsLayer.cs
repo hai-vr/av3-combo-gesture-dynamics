@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.EmbeddedAac.Framework.Editor.Internal.V0;
 using UnityEditor.Animations;
+using UnityEngine;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor
 {
@@ -56,8 +57,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             tree.useAutomaticThresholds = false;
             tree.children = _orderedCompiledEffects.Select((effect, index) => new ChildMotion
             {
-                threshold = index,
-                motion = isGesture ? effect.compiledMotion.gesture : effect.compiledMotion.fx
+                threshold = index / (_orderedCompiledEffects.Length - 1f),
+                // motion = effect.compiledMotion.universal // FIXME: Temporary
+                motion = _aac.CopyClip((AnimationClip) effect.compiledMotion.universal).Clip // FIXME: Temporary
+                // motion = isGesture ? effect.compiledMotion.gesture : effect.compiledMotion.fx
             }).ToArray();
 
             return tree;
