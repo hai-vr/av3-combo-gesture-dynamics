@@ -59,7 +59,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 var childRule = child.GetComponent<CgdRule>();
                 if (childRule == null) continue;
 
-                mutableActivations.AddRange(FlattenRulesBelongingToPart(childRule, part, currentTweening, inheritedConditions, compiledEffect, whenFirstPartCreateDenyList));
+                mutableActivations.AddRange(FlattenRulesBelongingToPart(childRule, part, currentTweening, currentConditions, compiledEffect, whenFirstPartCreateDenyList));
             }
 
             if (currentRule.parts.Length == 0 || currentRule.parts.Contains(part))
