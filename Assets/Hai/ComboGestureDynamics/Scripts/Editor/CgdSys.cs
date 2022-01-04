@@ -97,8 +97,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         internal class CompiledMotion
         {
             public Motion universal;
-            public Motion fx;
-            public Motion gesture;
         }
 
         internal class Activation
