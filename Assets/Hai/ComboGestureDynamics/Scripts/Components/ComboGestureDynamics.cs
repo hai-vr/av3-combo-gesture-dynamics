@@ -8,7 +8,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public VRCAvatarDescriptor avatar;
 
         public CgdRootRule rootRule;
-        public CgdMainPart mainPart;
+        public CgdPart mainPart;
 
         public CgdPart[] secondaryParts;
         public Transform effectsLibrary;

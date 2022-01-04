@@ -127,6 +127,15 @@ namespace Hai.Cge2Aac.Framework.Editor.Internal.V0.Fluentb
             return new AacFlState(state, _machine);
         }
 
+        internal AacFlState NewStateAt(string name, float x, float y)
+        {
+            var state = _machine.AddState(name, new Vector3(x, y, 0));
+            state.motion = _emptyClip;
+            state.writeDefaultValues = false;
+
+            return new AacFlState(state, _machine);
+        }
+
         public AacFlTransition AnyTransitionsTo(AacFlState destination)
         {
             return AnyTransition(destination, _machine);

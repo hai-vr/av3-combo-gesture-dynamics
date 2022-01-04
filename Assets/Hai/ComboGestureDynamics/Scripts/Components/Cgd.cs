@@ -8,8 +8,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct PropertyMask
         {
+            public string path;
             public Type type;
-            public string name;
+            public string propertyName;
         }
 
         [Serializable]
@@ -98,7 +99,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             [Serializable]
             public enum FloatOperation
             {
-                Equal, NotEqual, StrictlyGreaterThan, StrictlyLessThan
+                StrictlyGreaterThan, StrictlyLessThan
             }
         }
 
@@ -224,7 +225,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public enum Shape
         {
-            Linear
+            Linear,
+            EaseInEaseOut,
+            AttackInEaseOut
         }
 
         [Serializable]
@@ -252,6 +255,13 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public enum EffectBehaviourType
         {
             Normal, Analog, AnyFist, BothFists
+        }
+
+        public class Permutation
+        {
+            public EffectBehaviour[] animation;
+            public TweeningType tweeningType;
+            public Tweening tweening;
         }
     }
 }

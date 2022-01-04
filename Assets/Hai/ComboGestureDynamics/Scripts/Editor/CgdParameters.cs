@@ -1,4 +1,6 @@
-﻿namespace Hai.ComboGestureDynamics.Scripts.Editor
+﻿using Hai.ComboGestureDynamics.Scripts.Components;
+
+namespace Hai.ComboGestureDynamics.Scripts.Editor
 {
     public class CgdParameters
     {
@@ -9,14 +11,20 @@
             _prefix = prefix;
         }
 
-        public string ExpressionLow => $"{_prefix}_ExpressionLow";
-        public string ExpressionHigh => $"{_prefix}_ExpressionHigh";
-        public string Tweening => $"{_prefix}_Tweening";
-        public string CommandToHigh => $"{_prefix}_CommandToHigh";
-        public string CommandToLow => $"{_prefix}_CommandToLow";
-        public string ShapeToHigh => $"{_prefix}_ShapeToHigh";
-        public string ShapeToLow => $"{_prefix}_ShapeToLow";
-        public string DurationToHigh => $"{_prefix}_DurationToHigh";
-        public string DurationToLow => $"{_prefix}_DurationToLow";
+        public string ExpressionLow => $"{_prefix}_{nameof(ExpressionLow)}";
+        public string ExpressionHigh => $"{_prefix}_{nameof(ExpressionHigh)}";
+        public string Tweening => $"{_prefix}_{nameof(Tweening)}";
+        public string DefaultMoodSelector => $"{_prefix}_{nameof(DefaultMoodSelector)}";
+        public string IsLeftEyeClosed => $"{_prefix}_{nameof(IsLeftEyeClosed)}";
+        public string TweenIsReady => $"{_prefix}_{nameof(TweenIsReady)}";
+        public string TweenIsHigh => $"{_prefix}_{nameof(TweenIsHigh)}";
+        public string TweenShape => $"{_prefix}_{nameof(TweenShape)}";
+        public string TweenDuration => $"{_prefix}_{nameof(TweenDuration)}";
+        public string ActivationIsHigh => $"{_prefix}_{nameof(ActivationIsHigh)}";
+
+        public string SpecificMoodSelector(Cgd.SpecificMoodSelector specificMoodSelector)
+        {
+            return specificMoodSelector.moodSelector.selectorName;
+        }
     }
 }
