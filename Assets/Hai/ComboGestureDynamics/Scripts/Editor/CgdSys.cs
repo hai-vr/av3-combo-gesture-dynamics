@@ -33,26 +33,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             public int value;
         }
 
-        internal class AnyHandSideWithPoseCondition : ICondition
-        {
-            public int pose;
-        }
-
-        internal class LeftSideWithPoseCondition : ICondition
-        {
-            public int pose;
-        }
-
-        internal class RightSideWithPoseCondition : ICondition
-        {
-            public int pose;
-        }
-
-        internal class BothSidesWithPoseCondition : ICondition
-        {
-            public int pose;
-        }
-
         public struct Tweening
         {
             public float durationSeconds;

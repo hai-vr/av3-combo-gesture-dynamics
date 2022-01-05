@@ -112,16 +112,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI
                     EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.analogMin)));
                     EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.analogMax)));
                     break;
-                case Cgd.EffectBehaviourType.AnyFist:
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.fist)));
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.restOptional)));
-                    break;
-                case Cgd.EffectBehaviourType.BothFists:
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.bothFists)));
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.leftFist)));
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.rightFist)));
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.restOptional)));
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(effectBehaviourType), effectBehaviourType, null);
             }

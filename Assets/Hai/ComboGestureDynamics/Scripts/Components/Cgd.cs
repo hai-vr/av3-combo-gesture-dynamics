@@ -134,7 +134,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             [Serializable]
             public enum HandSide
             {
-                Any, Left, Right, Both
+                Left, Right, Both
             }
 
             [Serializable]
@@ -245,16 +245,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public float analogMax; // = 1f;
             public CgdEffect effect;
             public CgdEffect restOptional;
-            public CgdEffect fist;
-            public CgdEffect leftFist;
-            public CgdEffect rightFist;
-            public CgdEffect bothFists;
         }
 
         [Serializable]
         public enum EffectBehaviourType
         {
-            Normal, Analog, AnyFist, BothFists
+            Normal, Analog
         }
 
         public class Permutation

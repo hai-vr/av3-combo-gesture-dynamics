@@ -72,11 +72,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 });
             }
 
-            if (currentConditions.Any(condition => condition is CgdSys.AnyHandSideWithPoseCondition))
-            {
-                // TODO: Make big split of Any into Left, Right, and Both
-            }
-
             return mutableActivations.ToArray();
         }
 
@@ -254,44 +249,40 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         private CgdSys.ICondition[] HandGestureCondition(Cgd.HandGesture handGesture)
         {
-            // Hand gesture conditions need to behave differently based on:
-            // - Any: This is an OR condition, which requires an internal Rule tree duplication three times (Left, Right, Both), and this will affect the EffectBehavior fist parameter name.
-            // - Left/Right: This will affect the EffectBehavior Any Fist parameter name
-            // - Both: Depending on how things work, this will affect Any Fist parameter name,
-            //   but also, if supported, Vive Advanced Controls don't need to just work only on Fist pose but on any pose.
+            var postInt = (int)handGesture.pose;
             switch (handGesture.side)
             {
-                case Cgd.HandGesture.HandSide.Any:
-                    return new CgdSys.ICondition[]
-                    {
-                        new CgdSys.AnyHandSideWithPoseCondition
-                        {
-                            pose = (int)handGesture.pose
-                        },
-                    };
                 case Cgd.HandGesture.HandSide.Left:
                     return new CgdSys.ICondition[]
                     {
-                        new CgdSys.LeftSideWithPoseCondition
+                        new CgdSys.IntCondition
                         {
-                            pose = (int)handGesture.pose
-                        },
+                            key = "GestureLeft",
+                            value = postInt
+                        }
                     };
                 case Cgd.HandGesture.HandSide.Right:
                     return new CgdSys.ICondition[]
                     {
-                        new CgdSys.RightSideWithPoseCondition
+                        new CgdSys.IntCondition
                         {
-                            pose = (int)handGesture.pose
-                        },
+                            key = "GestureRight",
+                            value = postInt
+                        }
                     };
                 case Cgd.HandGesture.HandSide.Both:
                     return new CgdSys.ICondition[]
                     {
-                        new CgdSys.BothSidesWithPoseCondition
+                        new CgdSys.IntCondition
                         {
-                            pose = (int)handGesture.pose
+                            key = "GestureLeft",
+                            value = postInt
                         },
+                        new CgdSys.IntCondition
+                        {
+                            key = "GestureRight",
+                            value = postInt
+                        }
                     };
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -54,14 +54,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                             ),
                         }
                     };
-                case Cgd.EffectBehaviourType.AnyFist:
-                    // TODO!!!!!!!!!!!!!!!!!!!!
-                    if (true) return null;
-                    break;
-                case Cgd.EffectBehaviourType.BothFists:
-                    // TODO!!!!!!!!!!!!!!!!!!!!
-                    if (true) return null;
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
