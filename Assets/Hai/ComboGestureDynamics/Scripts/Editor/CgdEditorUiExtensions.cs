@@ -201,5 +201,14 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         //             throw new ArgumentOutOfRangeException();
         //     }
         // }
+        public static void RectOnRepaint(Func<Rect> rectFn, Action<Rect> applyFn)
+        {
+            var rect = rectFn();
+            if (Event.current.type == EventType.Repaint)
+            {
+                // https://answers.unity.com/questions/515197/how-to-use-guilayoututilitygetrect-properly.html
+                applyFn(rect);
+            }
+        }
     }
 }

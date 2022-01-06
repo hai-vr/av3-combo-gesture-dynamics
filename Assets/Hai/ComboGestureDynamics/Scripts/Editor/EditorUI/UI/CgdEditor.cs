@@ -9,34 +9,26 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 {
     public class CgdEditor : EditorWindow
     {
-        private const int PermutationWidth = 100;
-        private const int PermutationHeight = 90;
-        private static Color LeftSideBg => EditorGUIUtility.isProSkin ? new Color(0.62f, 0.4f, 0.12f) : new Color(1f, 0.81f, 0.59f);
-        private static Color RightSideBg => EditorGUIUtility.isProSkin ? new Color(0.24f, 0.48f, 0.62f) : new Color(0.7f, 0.9f, 1f);
-        private static Color NeutralSideBg => EditorGUIUtility.isProSkin ? new Color(0.07f, 0.07f, 0.07f) : new Color(0.88f, 0.88f, 0.88f);
-        private static Color LeftSymmetricalBg => EditorGUIUtility.isProSkin ? new Color(0.34f, 0.27f, 0.23f) : new Color(0.7f, 0.65f, 0.59f);
-        private static Color RightSymmetricalBg => EditorGUIUtility.isProSkin ? new Color(0.23f, 0.26f, 0.34f) : new Color(0.56f, 0.64f, 0.7f);
-        private static Color InconsistentBg => EditorGUIUtility.isProSkin ? new Color(0.72f, 0.09f, 0.27f) : new Color(1f, 0.41f, 0.54f);
-        private static Color HighlightMain => EditorGUIUtility.isProSkin ? new Color(0.61f, 0.61f, 0.61f) : Color.white;
-        private static Color HighlightSecondary => EditorGUIUtility.isProSkin ? new Color(0.43f, 0.43f, 0.43f) : new Color(0.82f, 0.82f, 0.82f);
         private Vector2 _scrollPos;
-        private Rect m_permutationArea;
-        private static bool _anySelectedPermutation;
-        private static CgdEdi.Permutation _selectedPermutation;
         private int _focus;
 
         private Components.ComboGestureDynamics _cgd;
         private Rect m_focusArea;
-        private Rect m_focusPermutationSelectedRect;
-        private Rect m_focusPermutationMirrorRect;
         private CgdRule _selectedRule;
         private CgdPermutationRuleset _selectedPermutationRuleset;
+
+        private CgdEditorPermutationsLayout _cgdEditorPermutationsLayout;
 
         [MenuItem("Window/Haï/ComboGestureDynamics UI")]
         public static void ShowWindow()
         {
             var window = GetWindow<CgdEditor>();
             window.titleContent = new GUIContent("ComboGestureDynamics");
+        }
+
+        private void OnEnable()
+        {
+            _cgdEditorPermutationsLayout = new CgdEditorPermutationsLayout(this);
         }
 
         private void OnInspectorUpdate()
@@ -61,8 +53,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             // _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.Height(position.height));
             //
 
-            var cgdSerialized = new SerializedObject(_cgd);
-
             // GUILayout.BeginVertical("GroupBox");
             // EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.Animations), EditorStyles.boldLabel);
             // GUILayout.EndVertical();
@@ -77,12 +67,23 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             });
             GUILayout.EndHorizontal();
 
-            GUILayout.BeginHorizontal();
+            if (_cgd != null)
+            {
+                switch (_focus)
+                {
+                    case 2:
+                        _cgdEditorPermutationsLayout.Layout();
+                        return;
+                    default:
+                        break;
+                }
+            }
+
             if (_cgd != null)
             {
                 GUILayout.BeginVertical("GroupBox");
 
-                RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 7, EditorGUIUtility.singleLineHeight * 7), rect => m_focusArea = rect);
+                CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 7, EditorGUIUtility.singleLineHeight * 7), rect => m_focusArea = rect);
                 GUILayout.BeginArea(m_focusArea);
                 switch (_focus)
                 {
@@ -91,33 +92,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                         EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Component)), _cgd, typeof(Components.ComboGestureDynamics), true);
                         EditorGUI.EndDisabledGroup();
 
+                        var cgdSerialized = new SerializedObject(_cgd);
                         EditorGUILayout.PropertyField(cgdSerialized.FindProperty(nameof(Components.ComboGestureDynamics.avatar)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.AvatarDescriptor)));
+                        cgdSerialized.ApplyModifiedProperties();
                         break;
                     case 2:
-                        if (_anySelectedPermutation)
-                        {
-                            EditorGUILayout.BeginHorizontal();
-
-                            var leftSide = _selectedPermutation.IsLeft() ? _selectedPermutation : _selectedPermutation.Mirror();
-                            var rightSide = leftSide.Mirror();
-
-                            RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth, PermutationHeight), rect => m_focusPermutationSelectedRect = rect);
-                            GUILayout.BeginArea(m_focusPermutationSelectedRect);
-                            DrawPermutationBox(leftSide, true);
-                            GUILayout.EndArea();
-
-                            if (!_selectedPermutation.IsSymmetrical())
-                            {
-                                RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth, PermutationHeight), rect => m_focusPermutationMirrorRect = rect);
-                                GUILayout.BeginArea(m_focusPermutationMirrorRect);
-                                DrawPermutationBox(rightSide, true);
-                                GUILayout.EndArea();
-                            }
-
-                            GUILayout.FlexibleSpace();
-
-                            EditorGUILayout.EndHorizontal();
-                        }
                         break;
                     case 3:
                         if (_selectedRule != null)
@@ -171,7 +150,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 case 1:
                     break;
                 case 2:
-                    PermutationsLayout();
                     break;
                 case 3:
                     RulesLayout();
@@ -183,39 +161,8 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                     break;
             }
 
-            cgdSerialized.ApplyModifiedProperties();
             //
             // GUILayout.EndScrollView();
-        }
-
-        private void PermutationsLayout()
-        {
-            GUILayout.BeginVertical("GroupBox");
-            EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.Permutations, "dummy"), EditorStyles.boldLabel);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth * 8, PermutationHeight * 8), rect => m_permutationArea = rect);
-            GUILayout.BeginArea(m_permutationArea);
-            for (var left = 0; left <= (int) Cgd.HandGesture.HandPose.ThumbsUp; left++)
-            {
-                var leftPose = (Cgd.HandGesture.HandPose) left;
-                for (var right = 0; right <= (int) Cgd.HandGesture.HandPose.ThumbsUp; right++)
-                {
-                    var rightPose = (Cgd.HandGesture.HandPose) right;
-                    GUILayout.BeginArea(RectAt(right, left));
-                    var permutation = new CgdEdi.Permutation(leftPose, rightPose);
-                    DrawPermutationBox(permutation);
-                    GUILayout.EndArea();
-                }
-            }
-
-            GUILayout.EndArea();
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-            GUILayout.Space(EditorGUIUtility.singleLineHeight);
-            GUILayout.EndVertical();
         }
 
         private void RulesLayout()
@@ -323,72 +270,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         {
             _selectedRule = null;
             _selectedPermutationRuleset = null;
-        }
-
-        private static void DrawPermutationBox(CgdEdi.Permutation permutation, bool bypassSelection = false)
-        {
-            if (!bypassSelection && _anySelectedPermutation && _selectedPermutation.left == permutation.left && _selectedPermutation.right == permutation.right)
-            {
-                DrawColoredBackground(HighlightMain);
-            }
-            else if (!bypassSelection && _anySelectedPermutation && _selectedPermutation.left == permutation.right && _selectedPermutation.right == permutation.left)
-            {
-                DrawColoredBackground(HighlightSecondary);
-            }
-            else
-            {
-                DrawColoredBackground(permutation.left == permutation.right ? NeutralSideBg : (int)permutation.left > (int)permutation.right ? LeftSideBg : RightSideBg);
-            }
-
-            GUILayout.BeginVertical();
-
-            EditorGUILayout.LabelField(new CgdEdi.Permutation(permutation.left, permutation.right).ToLocalizedName());
-            // GUILayout.Box("", GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 3));
-            if (GUILayout.Button(GUIContent.none, GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2)))
-            {
-                SelectPermutation(permutation.left, permutation.right);
-            }
-            GUILayout.EndVertical();
-        }
-
-        private static void SelectPermutation(Cgd.HandGesture.HandPose leftPose, Cgd.HandGesture.HandPose rightPose)
-        {
-            _anySelectedPermutation = true;
-            _selectedPermutation = new CgdEdi.Permutation(leftPose, rightPose);
-        }
-
-        private static void DrawColoredBackground(Color color)
-        {
-            var col = GUI.color;
-            try
-            {
-                GUI.color = color;
-                GUI.Box(new Rect(0, 0, PermutationWidth, PermutationHeight), "", new GUIStyle("box") {
-                    normal = new GUIStyleState
-                    {
-                        background = Texture2D.whiteTexture
-                    }
-                });
-            }
-            finally
-            {
-                GUI.color = col;
-            }
-        }
-
-        private static Rect RectAt(int xGrid, int yGrid)
-        {
-            return new Rect(xGrid * PermutationWidth, yGrid * PermutationHeight, PermutationWidth - 3, PermutationHeight - 3);
-        }
-
-        private static void RectOnRepaint(Func<Rect> rectFn, Action<Rect> applyFn)
-        {
-            var rect = rectFn();
-            if (Event.current.type == EventType.Repaint)
-            {
-                // https://answers.unity.com/questions/515197/how-to-use-guilayoututilitygetrect-properly.html
-                applyFn(rect);
-            }
         }
     }
 }
