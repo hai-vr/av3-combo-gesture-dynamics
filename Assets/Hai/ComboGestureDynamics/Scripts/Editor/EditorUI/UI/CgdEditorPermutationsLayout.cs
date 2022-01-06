@@ -7,6 +7,8 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
     internal class CgdEditorPermutationsLayout
     {
         private readonly CgdEditor _cgdEditor;
+        private Rect m_focusAreaRect;
+
         private static Color LeftSideBg => EditorGUIUtility.isProSkin ? new Color(0.62f, 0.4f, 0.12f) : new Color(1f, 0.81f, 0.59f);
         private static Color RightSideBg => EditorGUIUtility.isProSkin ? new Color(0.24f, 0.48f, 0.62f) : new Color(0.7f, 0.9f, 1f);
         private static Color NeutralSideBg => EditorGUIUtility.isProSkin ? new Color(0.07f, 0.07f, 0.07f) : new Color(0.88f, 0.88f, 0.88f);
@@ -20,7 +22,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         private Rect m_permutationAreaRect;
         private Rect m_focusPermutationSelectedRect;
         private Rect m_focusPermutationMirrorRect;
-        private Rect m_focusAreaRect;
 
         private const int PermutationWidth = 100;
         private const int PermutationHeight = 90;
