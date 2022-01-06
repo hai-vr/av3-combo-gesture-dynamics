@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Hai.ComboGestureDynamics.Scripts.Components
 {
@@ -11,6 +14,21 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public string path;
             public Type type;
             public string propertyName;
+
+            public bool IsSameAsBinding(EditorCurveBinding binding)
+            {
+                return path == binding.path && type == binding.type && propertyName == binding.propertyName;
+            }
+
+            public EditorCurveBinding ToEditorCurveBinding()
+            {
+                return new EditorCurveBinding
+                {
+                    path = path,
+                    type = type,
+                    propertyName = propertyName
+                };
+            }
         }
 
         [Serializable]
@@ -178,16 +196,16 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         }
 
         [Serializable]
-        public class Regular
+        public struct Regular
         {
-            public InheritedEffect[] inheritedEffects = new InheritedEffect[0];
-            public InsertedClip[] insertedClips = new InsertedClip[0];
-            public PropertyValue[] properties = new PropertyValue[0];
-            public Tag[] tags = new Tag[0];
+            public InheritedEffect[] inheritedEffects; // = new InheritedEffect[0];
+            public InsertedClip[] insertedClips; // = new InsertedClip[0];
+            public PropertyValue[] properties; // = new PropertyValue[0];
+            public Tag[] tags; // = new Tag[0];
         }
 
         [Serializable]
-        public class InsertedClip
+        public struct InsertedClip
         {
             public AnimationClip clip;
             public PropertyMask[] rejectedProperties;
@@ -201,19 +219,13 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         }
 
         [Serializable]
-        public struct RootTweening
-        {
-            public float durationSeconds;
-            public Shape shape;
-            public Importance importance;
-        }
-
-        [Serializable]
         public struct Tweening
         {
-            public float durationSeconds;
+            [FormerlySerializedAs("durationSeconds")] public float entranceDurationSeconds;
             public Shape shape;
             public Importance importance;
+            [FormerlySerializedAs("customExitDuration")] public bool hasCustomExitDuration;
+            public float exitDurationSeconds;
         }
 
         [Serializable]
@@ -233,7 +245,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public enum Importance
         {
-            None
+            None, Important
         }
 
         [Serializable]
@@ -245,19 +257,44 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public float analogMax; // = 1f;
             public CgdEffect effect;
             public CgdEffect restOptional;
+
+            public CgdEffect[] DefensiveActiveEffects()
+            {
+                switch (effectBehaviourType)
+                {
+                    case EffectBehaviourType.Normal: return NonNull(new[] {effect});
+                    case EffectBehaviourType.Analog: return NonNull(new[] {effect, restOptional});
+                    case EffectBehaviourType.None: return new CgdEffect[0];
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            private CgdEffect[] NonNull(CgdEffect[] things)
+            {
+                return things.Where(cgdEffect => cgdEffect != null).ToArray();
+            }
         }
 
         [Serializable]
         public enum EffectBehaviourType
         {
-            Normal, Analog
+            Normal, Analog, None
         }
 
-        public class Permutation
+        [Serializable]
+        public struct PermutationEffectBehaviour
         {
-            public EffectBehaviour[] animation;
+            public EffectBehaviour[] effectLeftRight;
+            public EffectBehaviour effectFistLeft;
+            public EffectBehaviour effectFistRight;
             public TweeningType tweeningType;
             public Tweening tweening;
+        }
+
+        public enum PermutationStencil
+        {
+            None, DefinedAndCombos, Defined
         }
     }
 }

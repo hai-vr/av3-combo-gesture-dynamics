@@ -38,9 +38,31 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI
                 if ((Cgd.TweeningType) tweeningType.intValue == Cgd.TweeningType.Custom)
                 {
                     var tweening = serializedObject.FindProperty(nameof(CgdRule.tweening));
-                    EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.durationSeconds)));
+                    EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.entranceDurationSeconds)));
                     EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.shape)));
-                    EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.importance)));
+                    var importance = tweening.FindPropertyRelative(nameof(Cgd.Tweening.importance));
+                    EditorGUILayout.PropertyField(importance);
+                    if (importance.hasMultipleDifferentValues)
+                    {
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.hasCustomExitDuration)));
+                        EditorGUI.EndDisabledGroup();
+                    }
+                    else
+                    {
+                        var hasCustomExitDuration = tweening.FindPropertyRelative(nameof(Cgd.Tweening.hasCustomExitDuration));
+                        if (hasCustomExitDuration.hasMultipleDifferentValues)
+                        {
+                            EditorGUI.BeginDisabledGroup(true);
+                            EditorGUILayout.PropertyField(hasCustomExitDuration);
+                            EditorGUI.EndDisabledGroup();
+                        }
+                        else
+                        {
+                            EditorGUILayout.PropertyField(hasCustomExitDuration);
+                            EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.entranceDurationSeconds)));
+                        }
+                    }
                 }
             }
 
@@ -49,35 +71,22 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI
 
         private static void ConcreteConditionField(Cgd.ConditionType actualConditionType, SerializedProperty condition)
         {
+            EditorGUILayout.PropertyField(condition.FindPropertyRelative(PropertyNameOf(actualConditionType)));
+        }
+
+        private static string PropertyNameOf(Cgd.ConditionType actualConditionType)
+        {
             switch (actualConditionType)
             {
-                case Cgd.ConditionType.HandGesture:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.handGesture)));
-                    break;
-                case Cgd.ConditionType.DefaultMoodSelector:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.defaultMoodSelector)));
-                    break;
-                case Cgd.ConditionType.SpecificMoodSelector:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.specificMoodSelector)));
-                    break;
-                case Cgd.ConditionType.ParameterBoolValue:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.parameterBoolValue)));
-                    break;
-                case Cgd.ConditionType.ParameterIntValue:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.parameterIntValue)));
-                    break;
-                case Cgd.ConditionType.ParameterFloatValue:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.parameterFloatValue)));
-                    break;
-                case Cgd.ConditionType.ParameterIntBetween:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.parameterIntBetween)));
-                    break;
-                case Cgd.ConditionType.ParameterFloatBetween:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.parameterFloatBetween)));
-                    break;
-                case Cgd.ConditionType.ConditionFromComponent:
-                    EditorGUILayout.PropertyField(condition.FindPropertyRelative(nameof(Cgd.Condition.conditionFromComponent)));
-                    break;
+                case Cgd.ConditionType.HandGesture: return nameof(Cgd.Condition.handGesture);
+                case Cgd.ConditionType.DefaultMoodSelector: return nameof(Cgd.Condition.defaultMoodSelector);
+                case Cgd.ConditionType.SpecificMoodSelector: return nameof(Cgd.Condition.specificMoodSelector);
+                case Cgd.ConditionType.ParameterBoolValue: return nameof(Cgd.Condition.parameterBoolValue);
+                case Cgd.ConditionType.ParameterIntValue: return nameof(Cgd.Condition.parameterIntValue);
+                case Cgd.ConditionType.ParameterFloatValue: return nameof(Cgd.Condition.parameterFloatValue);
+                case Cgd.ConditionType.ParameterIntBetween: return nameof(Cgd.Condition.parameterIntBetween);
+                case Cgd.ConditionType.ParameterFloatBetween: return nameof(Cgd.Condition.parameterFloatBetween);
+                case Cgd.ConditionType.ConditionFromComponent: return nameof(Cgd.Condition.conditionFromComponent);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -117,25 +126,4 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI
             }
         }
     }
-    /*
-    [CustomPropertyDrawer(typeof(Cgd.Condition))]
-    public class CgdConditionDrawer : PropertyDrawer
-    {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            EditorGUI.BeginProperty(position, label, property);
-            EditorGUILayout.PropertyField(property.FindPropertyRelative(nameof(Cgd.Condition.conditionType)), new GUIContent("Condition Type"));
-        // public ConditionType conditionType;
-        // public HandGesture handGesture;
-        // public DefaultMoodSelector defaultMoodSelector;
-        // public SpecificMoodSelector specificMoodSelector;
-        // public ParameterBoolValue parameterBoolValue;
-        // public ParameterIntValue parameterIntValue;
-        // public ParameterFloatValue parameterFloatValue;
-        // public ParameterIntBetween parameterIntBetween;
-        // public ParameterFloatBetween parameterFloatBetween;
-            EditorGUI.EndProperty();
-        }
-    }
-    */
 }

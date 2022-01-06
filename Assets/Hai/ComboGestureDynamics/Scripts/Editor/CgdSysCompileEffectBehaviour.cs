@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor
 {
-    internal class CgdSysCompileEffect
+    internal class CgdSysCompileEffectBehaviour
     {
         private readonly Cgd.EffectBehaviour _effectBehaviour;
         private readonly CgdPart _part;
@@ -16,7 +16,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         private readonly Cgd.PropertyMask[] _denyListOnlyFirstPartNullable;
         private readonly CgdParameters _cgdParameters;
 
-        public CgdSysCompileEffect(Cgd.EffectBehaviour effectBehaviour, CgdPart part, CgdSys.CompiledEffect previousEffectOptional, Cgd.PropertyMask[] denyListOnlyFirstPartNullable, CgdParameters cgdParameters)
+        public CgdSysCompileEffectBehaviour(Cgd.EffectBehaviour effectBehaviour, CgdPart part, CgdSys.CompiledEffect previousEffectOptional, Cgd.PropertyMask[] denyListOnlyFirstPartNullable, CgdParameters cgdParameters)
         {
             _effectBehaviour = effectBehaviour;
             _part = part;
@@ -30,16 +30,16 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             switch (_effectBehaviour.effectBehaviourType)
             {
                 case Cgd.EffectBehaviourType.Normal:
-                    return CompileMotion(_effectBehaviour.effect);
+                    return new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, _effectBehaviour.effect).Compile();
                 case Cgd.EffectBehaviourType.Analog:
-                    var active = CompileMotion(_effectBehaviour.effect);
+                    var active = new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, _effectBehaviour.effect).Compile();
 
                     if (_effectBehaviour.restOptional == null && _previousEffectOptional == null)
                     {
                         return active; // FIXME: This is defensive
                     }
 
-                    var rest = _effectBehaviour.restOptional != null ? CompileMotion(_effectBehaviour.restOptional) : _previousEffectOptional;
+                    var rest = _effectBehaviour.restOptional != null ? new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, _effectBehaviour.restOptional).Compile() : _previousEffectOptional;
 
                     return new CgdSys.CompiledEffect
                     {
@@ -54,6 +54,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                             ),
                         }
                     };
+                case Cgd.EffectBehaviourType.None:
+                    // This might only be applicable for the Root Rule.
+                    // Normally, None does not result in a compiled motion.
+                    return new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, new CgdEffect()).Compile();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -82,15 +86,31 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 }
             };
         }
+    }
 
-        private CgdSys.CompiledEffect CompileMotion(CgdEffect effect)
+    internal class CgdSysCompileSingleEffect
+    {
+        private readonly CgdPart _part;
+        private readonly Cgd.PropertyMask[] _denyListOnlyFirstPartNullable;
+        private readonly CgdParameters _cgdParameters;
+        private readonly CgdEffect _effect;
+
+        public CgdSysCompileSingleEffect(CgdPart part, Cgd.PropertyMask[] denyListOnlyFirstPartNullable, CgdParameters cgdParameters, CgdEffect effect)
         {
-            switch (effect.effectType)
+            _part = part;
+            _denyListOnlyFirstPartNullable = denyListOnlyFirstPartNullable;
+            _cgdParameters = cgdParameters;
+            _effect = effect;
+        }
+
+        public CgdSys.CompiledEffect Compile()
+        {
+            switch (_effect.effectType)
             {
                 case Cgd.EffectType.Regular:
                     return new CgdSys.CompiledEffect
                     {
-                        compiledMotion = CompileRegular(effect.regular, new Cgd.PropertyMask[0], new[] {effect.regular})
+                        compiledMotion = CompileRegular(_effect.regular, new Cgd.PropertyMask[0], new[] {_effect.regular})
                     };
                 case Cgd.EffectType.Blend:
                     // TODO!!!!!!!!!!!!!!!!!!!!
@@ -129,7 +149,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             foreach (var insertedClip in regular.insertedClips)
             {
                 var bindingsToAdd = AnimationUtility.GetCurveBindings(insertedClip.clip)
-                    .Where(binding => insertedClip.rejectedProperties.All(rejected => !MaskMatchesBinding(rejected, binding)))
+                    .Where(binding => insertedClip.rejectedProperties.All(rejected => !rejected.IsSameAsBinding(binding)))
                     .ToArray();
                 foreach (var editorCurveBinding in bindingsToAdd)
                 {
@@ -204,7 +224,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             var editorCurveBindings = AnimationUtility.GetCurveBindings(mutableClip);
             foreach (var editorCurveBinding in editorCurveBindings)
             {
-                if (!acceptedProperties.Any(accepted => MaskMatchesBinding(accepted, editorCurveBinding)))
+                if (!acceptedProperties.Any(accepted => accepted.IsSameAsBinding(editorCurveBinding)))
                 {
                     AnimationUtility.SetEditorCurve(mutableClip, editorCurveBinding, null);
                 }
@@ -228,11 +248,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             {
                 AnimationUtility.SetEditorCurve(mutableClip, toCopy, AnimationUtility.GetEditorCurve(rightClip, toCopy));
             }
-        }
-
-        private static bool MaskMatchesBinding(Cgd.PropertyMask mask, EditorCurveBinding binding)
-        {
-            return mask.path == binding.path && mask.type == binding.type && mask.propertyName == binding.propertyName;
         }
     }
 }
