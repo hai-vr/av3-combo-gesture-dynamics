@@ -114,7 +114,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 case Cgd.ConditionType.DefaultMoodSelector:
                     return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionDefaultMoodSelector, condition.defaultMoodSelector.selection);
                 case Cgd.ConditionType.SpecificMoodSelector:
-                    return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionSpecificMoodSelector, condition.specificMoodSelector.moodSelector.name, condition.specificMoodSelector.selection);
+                    return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionSpecificMoodSelector, condition.specificMoodSelector.moodSelector?.name, condition.specificMoodSelector.selection); // Defensive due to use in editor
                 case Cgd.ConditionType.ParameterBoolValue:
                     return condition.parameterBoolValue.value
                         ? CgdLocalization.Localize(CgdLocalization.Phrase.BoolIsTrue, condition.parameterBoolValue.parameterName)
@@ -158,7 +158,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 case Cgd.ConditionType.ParameterFloatBetween:
                     return NoCulture(condition.parameterFloatBetween.lowerBoundExclusive) + " < " + condition.parameterFloatBetween.parameterName + " < " + NoCulture(condition.parameterFloatBetween.upperBoundExclusive);
                 case Cgd.ConditionType.ConditionFromComponent:
-                    return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionConditionFromComponent, condition.conditionFromComponent.conditionComponent.name); // TODO: Describe this
+                    return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionConditionFromComponent, condition.conditionFromComponent.conditionComponent?.name); // Defensive due to use in editor // TODO: Describe this
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -208,6 +208,46 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             {
                 // https://answers.unity.com/questions/515197/how-to-use-guilayoututilitygetrect-properly.html
                 applyFn(rect);
+            }
+        }
+
+        public static CgdPermutationRuleset[] FindPermutationRulesets(Components.ComboGestureDynamics cgd)
+        {
+            var mutableResults = new List<CgdPermutationRuleset>();
+            FindPermutationRulesetsInTransform(mutableResults, cgd.rootRule.transform);
+            return mutableResults.ToArray();
+        }
+
+        private static void FindPermutationRulesetsInTransform(List<CgdPermutationRuleset> mutableResults, Transform ruleTransform)
+        {
+            foreach (Transform child in ruleTransform)
+            {
+                var ruleset = child.GetComponent<CgdPermutationRuleset>();
+                if (ruleset != null)
+                {
+                    mutableResults.Add(ruleset);
+                }
+                else
+                {
+                    var rule = child.GetComponent<CgdRule>();
+                    if (rule != null)
+                    {
+                        FindPermutationRulesetsInTransform(mutableResults, child);
+                    }
+                }
+            }
+        }
+
+        public static void TweeningBox(SerializedProperty tweeningType, SerializedProperty tweening)
+        {
+            EditorGUILayout.PropertyField(tweeningType, new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningType)));
+            if (!tweeningType.hasMultipleDifferentValues && (Cgd.TweeningType) tweeningType.intValue == Cgd.TweeningType.Custom)
+            {
+                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.shape)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningType)));
+                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.entranceDurationSeconds)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningEntranceDurationSeconds)));
+                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.importance)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningImportance)));
+                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.hasCustomExitDuration)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningHasCustomExitDuration)));
+                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.exitDurationSeconds)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningExitDurationSeconds)));
             }
         }
     }

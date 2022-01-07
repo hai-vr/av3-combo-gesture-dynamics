@@ -18,7 +18,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             EditorGUILayout.BeginVertical("GroupBox");
             CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 7, EditorGUIUtility.singleLineHeight * 7), rect => m_focusAreaRect = rect);
             GUILayout.BeginArea(m_focusAreaRect);
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical();
 
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Component)), _cgdEditor.cgd, typeof(Components.ComboGestureDynamics), true);
@@ -28,7 +28,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             EditorGUILayout.PropertyField(cgdSerialized.FindProperty(nameof(Components.ComboGestureDynamics.avatar)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.AvatarDescriptor)));
             cgdSerialized.ApplyModifiedProperties();
 
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
             GUILayout.EndArea();
             EditorGUILayout.EndVertical();
         }

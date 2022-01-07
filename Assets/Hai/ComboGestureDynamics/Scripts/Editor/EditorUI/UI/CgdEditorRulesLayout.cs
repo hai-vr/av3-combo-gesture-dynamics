@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.Components;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
@@ -13,6 +14,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         private CgdRule _selectedRule;
         private CgdPermutationRuleset _selectedPermutationRuleset;
 
+        private ReorderableList conditionsRList;
+        private SerializedObject _ruleSerialized;
+
         public CgdEditorRulesLayout(CgdEditor cgdEditor)
         {
             _cgdEditor = cgdEditor;
@@ -21,9 +25,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         public void Layout()
         {
             EditorGUILayout.BeginVertical("GroupBox");
-            CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 7, EditorGUIUtility.singleLineHeight * 7), rect => m_focusAreaRect = rect);
+            CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 20, EditorGUIUtility.singleLineHeight * 20), rect => m_focusAreaRect = rect);
             GUILayout.BeginArea(m_focusAreaRect);
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical();
 
             if (_selectedRule != null)
             {
@@ -31,13 +35,27 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 // EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Component)), _selectedRule, typeof(CgdRule), true);
                 // EditorGUI.EndDisabledGroup();
 
-                var serializedRule = new SerializedObject(_selectedRule);
                 var serializedRuleObjectName = new SerializedObject(_selectedRule.gameObject);
                 EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.SelectedRule, _selectedRule.name), EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(serializedRuleObjectName.FindProperty("m_Name"), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.RuleName)));
                 serializedRuleObjectName.ApplyModifiedProperties();
-                EditorGUILayout.PropertyField(serializedRule.FindProperty(nameof(CgdRule.conditions)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Conditions)));
 
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical("GroupBox");
+                if (conditionsRList != null)
+                {
+                    conditionsRList.DoLayoutList();
+                }
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.BeginVertical("GroupBox");
+
+                SerializedObject serializedObject = new SerializedObject(_selectedRule);
+                CgdEditorUiExtensions.TweeningBox(serializedObject.FindProperty(nameof(CgdRule.tweeningType)), serializedObject.FindProperty(nameof(CgdRule.tweening)));
+                serializedObject.ApplyModifiedProperties();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+
+                _ruleSerialized.ApplyModifiedProperties();
             }
             else if (_selectedPermutationRuleset != null)
             {
@@ -56,7 +74,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.SelectedRule, CgdLocalization.Localize(CgdLocalization.Phrase.DefaultRule)), EditorStyles.boldLabel);
             }
 
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
             GUILayout.EndArea();
             EditorGUILayout.EndVertical();
 
@@ -70,6 +88,14 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             GUILayout.EndVertical();
         }
 
+        private void ConditionRListElement(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            var element = conditionsRList.serializedProperty.GetArrayElementAtIndex(index);
+            var conditionName = index < _selectedRule.conditions.Length ? CgdEditorUiExtensions.LocalizeCondition(_selectedRule.conditions[index]) : ""; // FIXME: How to get the struct out of the serialized property?
+            EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), conditionName);
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, 200, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative(nameof(Cgd.Condition.conditionType)), GUIContent.none);
+        }
+
         private void SelectRule(CgdPermutationRuleset permutationRuleset)
         {
             _selectedRule = null;
@@ -80,6 +106,16 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         {
             _selectedRule = rule;
             _selectedPermutationRuleset = null;
+
+            // reference: https://blog.terresquall.com/2020/03/creating-reorderable-lists-in-the-unity-inspector/
+            _ruleSerialized = new SerializedObject(_selectedRule);
+            conditionsRList = new ReorderableList(
+                _ruleSerialized,
+                _ruleSerialized.FindProperty(nameof(CgdRule.conditions)),
+                true, false, true, true
+            );
+            conditionsRList.drawElementCallback = ConditionRListElement;
+            conditionsRList.elementHeight = EditorGUIUtility.singleLineHeight * 2;
         }
 
         private void SelectDefaultRule()

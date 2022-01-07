@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
@@ -68,7 +69,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 switch (_focus)
                 {
                     case 0: _cgdEditorConfigurationLayout.Layout(); break;
-                    case 2: _cgdEditorPermutationsLayout.Layout(); break;
+                    case 2: _cgdEditorPermutationsLayout.Layout(position); break;
                     case 3: _cgdEditorRulesLayout.Layout(); break;
                     case 4: _cgdEditorPartsLayout.Layout(); break;
                 }
@@ -76,6 +77,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
             //
             // GUILayout.EndScrollView();
+        }
+
+        private void OnHierarchyChange()
+        {
+            Repaint();
         }
     }
 
@@ -94,11 +100,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             EditorGUILayout.BeginVertical("GroupBox");
             CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 7, EditorGUIUtility.singleLineHeight * 7), rect => m_focusAreaRect = rect);
             GUILayout.BeginArea(m_focusAreaRect);
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical();
 
 
 
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
             GUILayout.EndArea();
             EditorGUILayout.EndVertical();
         }

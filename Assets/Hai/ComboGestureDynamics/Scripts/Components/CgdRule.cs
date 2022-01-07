@@ -10,5 +10,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public Cgd.Tweening tweening;
 
         public CgdPart[] parts = new CgdPart[0];
+
+        public CgdRule ParentRuleNullableWhenRoot()
+        {
+            return transform.parent?.GetComponent<CgdRule>();
+        }
     }
 }

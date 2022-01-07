@@ -64,7 +64,13 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI
             BoolIsTrue,
             BoolIsFalse,
             MainPart,
-            SecondaryParts
+            SecondaryParts,
+            IgnoreHandSide,
+            TweeningType,
+            TweeningEntranceDurationSeconds,
+            TweeningImportance,
+            TweeningHasCustomExitDuration,
+            TweeningExitDurationSeconds
         }
     }
 }
