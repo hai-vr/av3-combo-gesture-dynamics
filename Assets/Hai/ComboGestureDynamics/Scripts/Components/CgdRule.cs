@@ -11,9 +11,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
 
         public CgdPart[] parts = new CgdPart[0];
 
-        public CgdRule ParentRuleNullableWhenRoot()
+        public void MutateAnyReferenceNormalize()
         {
-            return transform.parent?.GetComponent<CgdRule>();
+            if (conditions == null) conditions = new Cgd.Condition[0];
+            effectBehaviour.MutateAnyReferenceNormalize();
         }
     }
 }

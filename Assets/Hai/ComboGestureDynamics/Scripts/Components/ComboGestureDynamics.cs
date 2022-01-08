@@ -17,5 +17,17 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public bool generateMoodSelector = true;
         public bool generateEyeTracking = true;
         public bool generateFistSmoothing = true;
+
+        public void MutateAnyReferenceNormalize()
+        {
+            rootRule.MutateAnyReferenceNormalize();
+            mainPart.MutateAnyReferenceNormalize();
+            if (secondaryParts == null) secondaryParts = new CgdPart[0];
+            foreach (var secondaryPart in secondaryParts)
+            {
+                secondaryPart.MutateAnyReferenceNormalize();
+            }
+            if (moodSelector != null) moodSelector.MutateAnyReferenceNormalize();
+        }
     }
 }

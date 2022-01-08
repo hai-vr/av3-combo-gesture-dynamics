@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.Components;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -41,37 +43,46 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 serializedRuleObjectName.ApplyModifiedProperties();
 
                 EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical("GroupBox", GUILayout.Width(400));
+
+                var serializedObject = new SerializedObject(_selectedRule);
+                CgdEditorUiExtensions.TweeningBox(serializedObject.FindProperty(nameof(CgdRule.tweeningType)), serializedObject.FindProperty(nameof(CgdRule.tweening)));
+                serializedObject.ApplyModifiedProperties();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+
                 EditorGUILayout.BeginVertical("GroupBox");
                 if (conditionsRList != null)
                 {
                     conditionsRList.DoLayoutList();
                 }
                 EditorGUILayout.EndVertical();
-                EditorGUILayout.BeginVertical("GroupBox");
-
-                SerializedObject serializedObject = new SerializedObject(_selectedRule);
-                CgdEditorUiExtensions.TweeningBox(serializedObject.FindProperty(nameof(CgdRule.tweeningType)), serializedObject.FindProperty(nameof(CgdRule.tweening)));
-                serializedObject.ApplyModifiedProperties();
-                EditorGUILayout.EndVertical();
-                EditorGUILayout.EndHorizontal();
 
                 _ruleSerialized.ApplyModifiedProperties();
             }
             else if (_selectedPermutationRuleset != null)
             {
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Component)), _selectedPermutationRuleset, typeof(CgdRule), true);
-                EditorGUI.EndDisabledGroup();
-
                 EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.SelectedRule, _selectedPermutationRuleset.name), EditorStyles.boldLabel);
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical("GroupBox", GUILayout.Width(400));
+                var serializedObject = new SerializedObject(_selectedPermutationRuleset);
+                CgdEditorUiExtensions.TweeningBox(serializedObject.FindProperty(nameof(CgdPermutationRuleset.tweeningType)), serializedObject.FindProperty(nameof(CgdPermutationRuleset.tweening)));
+                serializedObject.ApplyModifiedProperties();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
             }
             else
             {
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Component)), _cgdEditor.cgd.rootRule, typeof(CgdRootRule), true);
-                EditorGUI.EndDisabledGroup();
-
                 EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.SelectedRule, CgdLocalization.Localize(CgdLocalization.Phrase.DefaultRule)), EditorStyles.boldLabel);
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical("GroupBox", GUILayout.Width(400));
+                var serializedObject = new SerializedObject(_cgdEditor.cgd.rootRule);
+                CgdEditorUiExtensions.TweeningInner(serializedObject.FindProperty(nameof(CgdRootRule.tweening)));
+                serializedObject.ApplyModifiedProperties();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndVertical();
@@ -93,7 +104,64 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             var element = conditionsRList.serializedProperty.GetArrayElementAtIndex(index);
             var conditionName = index < _selectedRule.conditions.Length ? CgdEditorUiExtensions.LocalizeCondition(_selectedRule.conditions[index]) : ""; // FIXME: How to get the struct out of the serialized property?
             EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), conditionName);
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, 200, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative(nameof(Cgd.Condition.conditionType)), GUIContent.none);
+            var conditionType = element.FindPropertyRelative(nameof(Cgd.Condition.conditionType));
+            CgdEditorUiExtensions.LocalizedEnumPropertyFieldNonLayout(new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, 200, EditorGUIUtility.singleLineHeight), conditionType, GUIContent.none, typeof(Cgd.ConditionType));
+            var parameterNameSerialized = element.FindPropertyRelative(nameof(Cgd.Condition.parameterName));
+            switch ((Cgd.ConditionType)conditionType.intValue)
+            {
+                case Cgd.ConditionType.HandGesture:
+                    CgdEditorUiExtensions.LocalizedEnumPropertyFieldNonLayout(new Rect(rect.x + 230, rect.y + EditorGUIUtility.singleLineHeight, 100, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative(nameof(Cgd.Condition.handGesture)).FindPropertyRelative(nameof(Cgd.HandGesture.side)), GUIContent.none, typeof(Cgd.HandGesture.HandSide));
+                    CgdEditorUiExtensions.LocalizedEnumPropertyFieldNonLayout(new Rect(rect.x + 330, rect.y + EditorGUIUtility.singleLineHeight, 150, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative(nameof(Cgd.Condition.handGesture)).FindPropertyRelative(nameof(Cgd.HandGesture.pose)), GUIContent.none, typeof(Cgd.HandGesture.HandPose));
+                    break;
+                case Cgd.ConditionType.DefaultMoodSelector:
+                    break;
+                case Cgd.ConditionType.SpecificMoodSelector:
+                    break;
+                case Cgd.ConditionType.ParameterBoolValue:
+                    EditorGUI.PropertyField(new Rect(rect.x + 230, rect.y + EditorGUIUtility.singleLineHeight, 160, EditorGUIUtility.singleLineHeight), parameterNameSerialized, GUIContent.none);
+                    EditorGUI.PropertyField(new Rect(rect.x + 430, rect.y + EditorGUIUtility.singleLineHeight, 100, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative(nameof(Cgd.Condition.parameterBoolValue)).FindPropertyRelative(nameof(Cgd.ParameterBoolValue.value)), GUIContent.none);
+                    if (GUI.Button(new Rect(rect.x + 390, rect.y + EditorGUIUtility.singleLineHeight, 30, EditorGUIUtility.singleLineHeight), CgdLocalization.Localize(CgdLocalization.Phrase.Search)))
+                    {
+                        CgdParameterSearchWindowProvider.Open(_cgdEditor.cgd, CgdParameterCollector.UserParameterType.BoolParam, parameterNameSerialized);
+                    }
+                    break;
+                case Cgd.ConditionType.ParameterIntValue:
+                    var intValue = element.FindPropertyRelative(nameof(Cgd.Condition.parameterIntValue));
+                    EditorGUI.PropertyField(new Rect(rect.x + 230, rect.y + EditorGUIUtility.singleLineHeight, 160, EditorGUIUtility.singleLineHeight), parameterNameSerialized, GUIContent.none);
+                    CgdEditorUiExtensions.LocalizedEnumPropertyFieldNonLayout(new Rect(rect.x + 430, rect.y + EditorGUIUtility.singleLineHeight, 90, EditorGUIUtility.singleLineHeight), intValue.FindPropertyRelative(nameof(Cgd.ParameterIntValue.operation)), GUIContent.none, typeof(Cgd.ParameterIntValue.IntOperation));
+                    EditorGUI.PropertyField(new Rect(rect.x + 530, rect.y + EditorGUIUtility.singleLineHeight, 100, EditorGUIUtility.singleLineHeight), intValue.FindPropertyRelative(nameof(Cgd.ParameterIntValue.value)), GUIContent.none);
+                    if (GUI.Button(new Rect(rect.x + 390, rect.y + EditorGUIUtility.singleLineHeight, 30, EditorGUIUtility.singleLineHeight), CgdLocalization.Localize(CgdLocalization.Phrase.Search)))
+                    {
+                        CgdParameterSearchWindowProvider.Open(_cgdEditor.cgd, CgdParameterCollector.UserParameterType.IntParam, parameterNameSerialized);
+                    }
+                    break;
+                case Cgd.ConditionType.ParameterFloatValue:
+                    var floatValue = element.FindPropertyRelative(nameof(Cgd.Condition.parameterFloatValue));
+                    EditorGUI.PropertyField(new Rect(rect.x + 230, rect.y + EditorGUIUtility.singleLineHeight, 160, EditorGUIUtility.singleLineHeight), parameterNameSerialized, GUIContent.none);
+                    CgdEditorUiExtensions.LocalizedEnumPropertyFieldNonLayout(new Rect(rect.x + 430, rect.y + EditorGUIUtility.singleLineHeight, 90, EditorGUIUtility.singleLineHeight), floatValue.FindPropertyRelative(nameof(Cgd.ParameterFloatValue.operation)), GUIContent.none, typeof(Cgd.ParameterFloatValue.FloatOperation));
+                    EditorGUI.PropertyField(new Rect(rect.x + 530, rect.y + EditorGUIUtility.singleLineHeight, 100, EditorGUIUtility.singleLineHeight), floatValue.FindPropertyRelative(nameof(Cgd.ParameterFloatValue.value)), GUIContent.none);
+                    if (GUI.Button(new Rect(rect.x + 390, rect.y + EditorGUIUtility.singleLineHeight, 30, EditorGUIUtility.singleLineHeight), CgdLocalization.Localize(CgdLocalization.Phrase.Search)))
+                    {
+                        CgdParameterSearchWindowProvider.Open(_cgdEditor.cgd, CgdParameterCollector.UserParameterType.FloatParam, parameterNameSerialized);
+                    }
+                    break;
+                case Cgd.ConditionType.ParameterIntBetween:
+                    var intBetween = element.FindPropertyRelative(nameof(Cgd.Condition.parameterIntBetween));
+                    EditorGUI.PropertyField(new Rect(rect.x + 230, rect.y + EditorGUIUtility.singleLineHeight, 40, EditorGUIUtility.singleLineHeight), intBetween.FindPropertyRelative(nameof(Cgd.ParameterIntBetween.lowerBoundInclusive)), GUIContent.none);
+                    EditorGUI.PropertyField(new Rect(rect.x + 280, rect.y + EditorGUIUtility.singleLineHeight, 140, EditorGUIUtility.singleLineHeight), parameterNameSerialized, GUIContent.none);
+                    EditorGUI.PropertyField(new Rect(rect.x + 430, rect.y + EditorGUIUtility.singleLineHeight, 40, EditorGUIUtility.singleLineHeight), intBetween.FindPropertyRelative(nameof(Cgd.ParameterIntBetween.upperBoundInclusive)), GUIContent.none);
+                    break;
+                case Cgd.ConditionType.ParameterFloatBetween:
+                    var floatBetween = element.FindPropertyRelative(nameof(Cgd.Condition.parameterFloatBetween));
+                    EditorGUI.PropertyField(new Rect(rect.x + 230, rect.y + EditorGUIUtility.singleLineHeight, 40, EditorGUIUtility.singleLineHeight), floatBetween.FindPropertyRelative(nameof(Cgd.ParameterFloatBetween.lowerBoundExclusive)), GUIContent.none);
+                    EditorGUI.PropertyField(new Rect(rect.x + 280, rect.y + EditorGUIUtility.singleLineHeight, 140, EditorGUIUtility.singleLineHeight), parameterNameSerialized, GUIContent.none);
+                    EditorGUI.PropertyField(new Rect(rect.x + 430, rect.y + EditorGUIUtility.singleLineHeight, 40, EditorGUIUtility.singleLineHeight), floatBetween.FindPropertyRelative(nameof(Cgd.ParameterFloatBetween.upperBoundExclusive)), GUIContent.none);
+                    break;
+                case Cgd.ConditionType.ConditionFromComponent:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void SelectRule(CgdPermutationRuleset permutationRuleset)

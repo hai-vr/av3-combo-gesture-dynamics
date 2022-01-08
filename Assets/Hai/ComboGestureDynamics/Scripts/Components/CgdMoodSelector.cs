@@ -22,5 +22,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         {
             public string parameterName;
         }
+
+        public void MutateAnyReferenceNormalize()
+        {
+            if (choices == null) choices = new Choice[0];
+        }
     }
 }

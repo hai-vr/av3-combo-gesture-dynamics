@@ -34,7 +34,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             _cgdEditor = cgdEditor;
         }
 
-        public void Layout(Rect position)
+        public void Layout()
         {
             InitIfApplicable();
 

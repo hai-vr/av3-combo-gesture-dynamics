@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -14,21 +13,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public string path;
             public Type type;
             public string propertyName;
-
-            public bool IsSameAsBinding(EditorCurveBinding binding)
-            {
-                return path == binding.path && type == binding.type && propertyName == binding.propertyName;
-            }
-
-            public EditorCurveBinding ToEditorCurveBinding()
-            {
-                return new EditorCurveBinding
-                {
-                    path = path,
-                    type = type,
-                    propertyName = propertyName
-                };
-            }
         }
 
         [Serializable]
@@ -65,6 +49,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public HandGesture handGesture;
             public DefaultMoodSelector defaultMoodSelector;
             public SpecificMoodSelector specificMoodSelector;
+            public string parameterName;
             public ParameterBoolValue parameterBoolValue;
             public ParameterIntValue parameterIntValue;
             public ParameterFloatValue parameterFloatValue;
@@ -89,14 +74,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct ParameterBoolValue
         {
-            public string parameterName;
             public bool value;
         }
 
         [Serializable]
         public struct ParameterIntValue
         {
-            public string parameterName;
             public IntOperation operation;
             public int value;
 
@@ -110,7 +93,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct ParameterFloatValue
         {
-            public string parameterName;
             public FloatOperation operation;
             public float value;
 
@@ -124,7 +106,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct ParameterIntBetween
         {
-            public string parameterName;
             public int lowerBoundInclusive;
             public int upperBoundInclusive;
         }
@@ -132,7 +113,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct ParameterFloatBetween
         {
-            public string parameterName;
             public float lowerBoundExclusive;
             public float upperBoundExclusive;
         }
@@ -174,6 +154,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         {
             public BlendType blendType;
             public Position[] positions;
+
+            public void MutateAnyReferenceNormalize()
+            {
+                if (positions == null) positions = new Position[0];
+            }
         }
 
         [Serializable]
@@ -202,6 +187,14 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public InsertedClip[] insertedClips; // = new InsertedClip[0];
             public PropertyValue[] properties; // = new PropertyValue[0];
             public Tag[] tags; // = new Tag[0];
+
+            public void MutateAnyReferenceNormalize()
+            {
+                if (inheritedEffects == null) inheritedEffects = new InheritedEffect[0];
+                if (insertedClips == null) insertedClips = new InsertedClip[0];
+                if (properties == null) properties = new PropertyValue[0];
+                if (tags == null) tags = new Tag[0];
+            }
         }
 
         [Serializable]
@@ -274,6 +267,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             {
                 return things.Where(cgdEffect => cgdEffect != null).ToArray();
             }
+
+            public void MutateAnyReferenceNormalize()
+            {
+                if (effect != null) effect.MutateAnyReferenceNormalize();
+                if (restOptional != null) restOptional.MutateAnyReferenceNormalize();
+            }
         }
 
         [Serializable]
@@ -285,7 +284,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct PermutationEffectBehaviour
         {
-            public EffectBehaviour[] effectLeftRight;
+            public EffectBehaviour effect;
             public EffectBehaviour effectFistLeft;
             public EffectBehaviour effectFistRight;
             public TweeningType tweeningType;

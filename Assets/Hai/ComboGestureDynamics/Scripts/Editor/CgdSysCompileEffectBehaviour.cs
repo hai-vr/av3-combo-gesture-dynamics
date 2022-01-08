@@ -149,7 +149,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             foreach (var insertedClip in regular.insertedClips)
             {
                 var bindingsToAdd = AnimationUtility.GetCurveBindings(insertedClip.clip)
-                    .Where(binding => insertedClip.rejectedProperties.All(rejected => !rejected.IsSameAsBinding(binding)))
+                    .Where(binding => insertedClip.rejectedProperties.All(rejected => !CgdSysExtensions.IsSameAsBinding(rejected, binding)))
                     .ToArray();
                 foreach (var editorCurveBinding in bindingsToAdd)
                 {
@@ -224,7 +224,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             var editorCurveBindings = AnimationUtility.GetCurveBindings(mutableClip);
             foreach (var editorCurveBinding in editorCurveBindings)
             {
-                if (!acceptedProperties.Any(accepted => accepted.IsSameAsBinding(editorCurveBinding)))
+                if (!acceptedProperties.Any(accepted => CgdSysExtensions.IsSameAsBinding(accepted, editorCurveBinding)))
                 {
                     AnimationUtility.SetEditorCurve(mutableClip, editorCurveBinding, null);
                 }

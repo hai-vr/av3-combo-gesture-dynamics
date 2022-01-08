@@ -47,14 +47,24 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         private static EditorCurveBinding[] FindAllDirectProperties(CgdEffect effect)
         {
-            return effect.regular.properties.Select(value => value.property.ToEditorCurveBinding()).ToArray();
+            return effect.regular.properties.Select(value => ToEditorCurveBinding(value.property)).ToArray();
+        }
+
+        private static EditorCurveBinding ToEditorCurveBinding(Cgd.PropertyMask propertyMask)
+        {
+            return new EditorCurveBinding
+            {
+                path = propertyMask.path,
+                type = propertyMask.type,
+                propertyName = propertyMask.propertyName
+            };
         }
 
         private static EditorCurveBinding[] FindAllInsertedClipsProperties(CgdEffect effect)
         {
             return effect.regular.insertedClips
                 .SelectMany(insertedClip => AnimationUtility.GetCurveBindings(insertedClip.clip)
-                    .Where(binding => !insertedClip.rejectedProperties.Any(mask => mask.IsSameAsBinding(binding)))
+                    .Where(binding => !insertedClip.rejectedProperties.Any(mask => CgdSysExtensions.IsSameAsBinding(mask, binding)))
                     .ToArray())
                 .ToArray();
         }
@@ -63,7 +73,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         {
             return effect.regular.inheritedEffects
                 .SelectMany(inheritedEffect => FindAllPropertiesOfEffect(inheritedEffect.effect)
-                    .Where(binding => !inheritedEffect.rejectedProperties.Any(mask => mask.IsSameAsBinding(binding)))
+                    .Where(binding => !inheritedEffect.rejectedProperties.Any(mask => CgdSysExtensions.IsSameAsBinding(mask, binding)))
                     .ToArray())
                 .ToArray();
         }
@@ -117,25 +127,25 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionSpecificMoodSelector, condition.specificMoodSelector.moodSelector?.name, condition.specificMoodSelector.selection); // Defensive due to use in editor
                 case Cgd.ConditionType.ParameterBoolValue:
                     return condition.parameterBoolValue.value
-                        ? CgdLocalization.Localize(CgdLocalization.Phrase.BoolIsTrue, condition.parameterBoolValue.parameterName)
-                        : CgdLocalization.Localize(CgdLocalization.Phrase.BoolIsFalse, condition.parameterBoolValue.parameterName);
+                        ? CgdLocalization.Localize(CgdLocalization.Phrase.BoolIsTrue, condition.parameterName)
+                        : CgdLocalization.Localize(CgdLocalization.Phrase.BoolIsFalse, condition.parameterName);
                 case Cgd.ConditionType.ParameterIntValue:
                     var intOperation = condition.parameterIntValue.operation;
                     var intValue = NoCulture(condition.parameterIntValue.value);
                     switch (intOperation)
                     {
                         case Cgd.ParameterIntValue.IntOperation.Equal:
-                            return condition.parameterIntValue.parameterName + " = " + intValue;
+                            return condition.parameterName + " = " + intValue;
                         case Cgd.ParameterIntValue.IntOperation.NotEqual:
-                            return condition.parameterIntValue.parameterName + " ≠ " + intValue;
+                            return condition.parameterName + " ≠ " + intValue;
                         case Cgd.ParameterIntValue.IntOperation.StrictlyGreaterThan:
-                            return condition.parameterIntValue.parameterName + " > " + intValue;
+                            return condition.parameterName + " > " + intValue;
                         case Cgd.ParameterIntValue.IntOperation.StrictlyLessThan:
-                            return condition.parameterIntValue.parameterName + " < " + intValue;
+                            return condition.parameterName + " < " + intValue;
                         case Cgd.ParameterIntValue.IntOperation.GreaterOrEqualTo:
-                            return condition.parameterIntValue.parameterName + " ≥ " + intValue;
+                            return condition.parameterName + " ≥ " + intValue;
                         case Cgd.ParameterIntValue.IntOperation.LessOrEqualTo:
-                            return condition.parameterIntValue.parameterName + " ≤ " + intValue;
+                            return condition.parameterName + " ≤ " + intValue;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -145,18 +155,18 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     switch (floatOperation)
                     {
                         case Cgd.ParameterFloatValue.FloatOperation.StrictlyGreaterThan:
-                            return condition.parameterFloatValue.parameterName + " > " + floatValue;
+                            return condition.parameterName + " > " + floatValue;
                             break;
                         case Cgd.ParameterFloatValue.FloatOperation.StrictlyLessThan:
-                            return condition.parameterFloatValue.parameterName + " < " + floatValue;
+                            return condition.parameterName + " < " + floatValue;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 case Cgd.ConditionType.ParameterIntBetween:
-                    return NoCulture(condition.parameterIntBetween.lowerBoundInclusive) + " ≤ " + condition.parameterIntBetween.parameterName + " ≤ " + NoCulture(condition.parameterIntBetween.upperBoundInclusive);
+                    return NoCulture(condition.parameterIntBetween.lowerBoundInclusive) + " ≤ " + condition.parameterName + " ≤ " + NoCulture(condition.parameterIntBetween.upperBoundInclusive);
                 case Cgd.ConditionType.ParameterFloatBetween:
-                    return NoCulture(condition.parameterFloatBetween.lowerBoundExclusive) + " < " + condition.parameterFloatBetween.parameterName + " < " + NoCulture(condition.parameterFloatBetween.upperBoundExclusive);
+                    return NoCulture(condition.parameterFloatBetween.lowerBoundExclusive) + " < " + condition.parameterName + " < " + NoCulture(condition.parameterFloatBetween.upperBoundExclusive);
                 case Cgd.ConditionType.ConditionFromComponent:
                     return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionConditionFromComponent, condition.conditionFromComponent.conditionComponent?.name); // Defensive due to use in editor // TODO: Describe this
                 default:
@@ -175,32 +185,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             return string.Format(CultureInfo.InvariantCulture, "{0:0.0###########}", obj);
         }
 
-        // public static string LocalizeCondition(Cgd.Condition condition)
-        // {
-        //     switch (condition.conditionType)
-        //     {
-        //         case Cgd.ConditionType.HandGesture:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionHandGesture, condition.handGesture.side, condition.handGesture.pose); // TODO: Hand gestures need to be remapped to localized
-        //         case Cgd.ConditionType.DefaultMoodSelector:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionDefaultMoodSelector);
-        //         case Cgd.ConditionType.SpecificMoodSelector:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionSpecificMoodSelector, condition.specificMoodSelector.moodSelector.name);
-        //         case Cgd.ConditionType.ParameterBoolValue:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionParameterBoolValue, condition.parameterBoolValue.parameterName, condition.parameterBoolValue.value);
-        //         case Cgd.ConditionType.ParameterIntValue:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionParameterIntValue, condition.parameterIntValue.parameterName, condition.parameterIntValue.operation, condition.parameterIntValue.value);
-        //         case Cgd.ConditionType.ParameterFloatValue:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionParameterFloatValue, condition.parameterFloatValue.parameterName, condition.parameterFloatValue.operation, condition.parameterFloatValue.value);
-        //         case Cgd.ConditionType.ParameterIntBetween:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionParameterIntBetween, condition.parameterIntBetween.parameterName, condition.parameterIntBetween.lowerBoundInclusive, condition.parameterIntBetween.upperBoundInclusive);
-        //         case Cgd.ConditionType.ParameterFloatBetween:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionParameterFloatBetween, condition.parameterFloatBetween.parameterName, condition.parameterFloatBetween.lowerBoundExclusive, condition.parameterFloatBetween.upperBoundExclusive);
-        //         case Cgd.ConditionType.ConditionFromComponent:
-        //             return CgdLocalization.Localize(CgdLocalization.Phrase.ConditionConditionFromComponent, condition.conditionFromComponent.conditionComponent.name); // TODO: Describe this
-        //         default:
-        //             throw new ArgumentOutOfRangeException();
-        //     }
-        // }
         public static void RectOnRepaint(Func<Rect> rectFn, Action<Rect> applyFn)
         {
             var rect = rectFn();
@@ -240,15 +224,81 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         public static void TweeningBox(SerializedProperty tweeningType, SerializedProperty tweening)
         {
-            EditorGUILayout.PropertyField(tweeningType, new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningType)));
+            LocalizedEnumPropertyField(tweeningType, new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningType)), typeof(Cgd.TweeningType));
             if (!tweeningType.hasMultipleDifferentValues && (Cgd.TweeningType) tweeningType.intValue == Cgd.TweeningType.Custom)
             {
-                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.shape)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningType)));
-                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.entranceDurationSeconds)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningEntranceDurationSeconds)));
-                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.importance)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningImportance)));
-                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.hasCustomExitDuration)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningHasCustomExitDuration)));
-                EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.exitDurationSeconds)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningExitDurationSeconds)));
+                TweeningInner(tweening);
             }
+        }
+
+        public static void TweeningInner(SerializedProperty tweening)
+        {
+            LocalizedEnumPropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.shape)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningShape)), typeof(Cgd.Shape));
+            EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.entranceDurationSeconds)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningEntranceDurationSeconds)));
+
+            var importance = tweening.FindPropertyRelative(nameof(Cgd.Tweening.importance));
+            LocalizedEnumPropertyField(importance, new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningImportance)), typeof(Cgd.Importance));
+            if (!importance.hasMultipleDifferentValues && importance.boolValue)
+            {
+                var hasCustomExitDuration = tweening.FindPropertyRelative(nameof(Cgd.Tweening.hasCustomExitDuration));
+                EditorGUILayout.PropertyField(hasCustomExitDuration, new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningHasCustomExitDuration)));
+
+                if (!hasCustomExitDuration.hasMultipleDifferentValues && hasCustomExitDuration.boolValue)
+                {
+                    EditorGUILayout.PropertyField(tweening.FindPropertyRelative(nameof(Cgd.Tweening.exitDurationSeconds)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.TweeningExitDurationSeconds)));
+                }
+            }
+        }
+
+        public static void LocalizedEnumPropertyField(SerializedProperty serializedProperty, GUIContent guiContent, Type enumType)
+        {
+            var names = LocalizedEnumNames(enumType);
+            if (serializedProperty.hasMultipleDifferentValues)
+            {
+                var shifted = EditorGUILayout.Popup(guiContent, 0, new[] {""}.Concat(names).ToArray());
+                if (shifted != 0)
+                {
+                    var choice = shifted - 1;
+                    serializedProperty.intValue = choice;
+                }
+            }
+            else
+            {
+                var indexed = EditorGUILayout.Popup(guiContent, serializedProperty.intValue, names.ToArray());
+                if (indexed != serializedProperty.intValue)
+                {
+                    serializedProperty.intValue = indexed;
+                }
+            }
+        }
+
+        public static void LocalizedEnumPropertyFieldNonLayout(Rect rect, SerializedProperty serializedProperty, GUIContent guiContent, Type enumType)
+        {
+            var names = LocalizedEnumNames(enumType);
+            if (serializedProperty.hasMultipleDifferentValues)
+            {
+                var shifted = EditorGUI.Popup(rect, guiContent, 0, new[] {""}.Concat(names).Select(s => new GUIContent(s)).ToArray());
+                if (shifted != 0)
+                {
+                    var choice = shifted - 1;
+                    serializedProperty.intValue = choice;
+                }
+            }
+            else
+            {
+                var indexed = EditorGUI.Popup(rect, guiContent, serializedProperty.intValue, names.Select(s => new GUIContent(s)).ToArray());
+                if (indexed != serializedProperty.intValue)
+                {
+                    serializedProperty.intValue = indexed;
+                }
+            }
+        }
+
+        private static string[] LocalizedEnumNames(Type enumType)
+        {
+            return Enum.GetValues(enumType).Cast<Enum>().ToArray()
+                .Select(enumValue => CgdLocalization.EnumLocalize(enumValue, enumType))
+                .ToArray();
         }
     }
 }

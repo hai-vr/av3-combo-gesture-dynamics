@@ -125,7 +125,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     {
                         new CgdSys.BoolCondition
                         {
-                            key = condition.parameterBoolValue.parameterName,
+                            key = condition.parameterName,
                             value = condition.parameterBoolValue.value
                         }
                     };
@@ -134,7 +134,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     {
                         new CgdSys.IntCondition
                         {
-                            key = condition.parameterIntValue.parameterName,
+                            key = condition.parameterName,
                             operation = Remap(condition.parameterIntValue.operation),
                             value = RemapIntValue(condition.parameterIntValue.operation, condition.parameterIntValue.value)
                         }
@@ -144,7 +144,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     {
                         new CgdSys.FloatCondition
                         {
-                            key = condition.parameterFloatValue.parameterName,
+                            key = condition.parameterName,
                             operation = Remap(condition.parameterFloatValue.operation),
                             value = condition.parameterFloatValue.value
                         }
@@ -154,13 +154,13 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     {
                         new CgdSys.IntCondition
                         {
-                            key = condition.parameterIntBetween.parameterName,
+                            key = condition.parameterName,
                             operation = CgdSys.IntOperation.IsGreaterThan,
                             value = condition.parameterIntBetween.lowerBoundInclusive - 1
                         },
                         new CgdSys.IntCondition
                         {
-                            key = condition.parameterIntBetween.parameterName,
+                            key = condition.parameterName,
                             operation = CgdSys.IntOperation.IsLessThan,
                             value = condition.parameterIntBetween.upperBoundInclusive + 1
                         }
@@ -170,13 +170,13 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     {
                         new CgdSys.FloatCondition
                         {
-                            key = condition.parameterFloatBetween.parameterName,
+                            key = condition.parameterName,
                             operation = CgdSys.FloatOperation.IsGreaterThan,
                             value = condition.parameterFloatBetween.lowerBoundExclusive
                         },
                         new CgdSys.FloatCondition
                         {
-                            key = condition.parameterFloatBetween.parameterName,
+                            key = condition.parameterName,
                             operation = CgdSys.FloatOperation.IsLessThan,
                             value = condition.parameterFloatBetween.upperBoundExclusive
                         }

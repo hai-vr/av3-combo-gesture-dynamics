@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -50,6 +50,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
         private void OnGUI()
         {
+            if (cgd != null)
+            {
+                cgd.MutateAnyReferenceNormalize();
+            }
+
             // _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.Height(position.height));
             //
 
@@ -58,7 +63,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             {
                 CgdLocalization.Localize(CgdLocalization.Phrase.Configuration),
                 CgdLocalization.Localize(CgdLocalization.Phrase.Animations),
-                CgdLocalization.Localize(CgdLocalization.Phrase.Permutations),
+                CgdLocalization.Localize(CgdLocalization.Phrase.HandGestures),
                 CgdLocalization.Localize(CgdLocalization.Phrase.Rules),
                 CgdLocalization.Localize(CgdLocalization.Phrase.Parts),
             });
@@ -69,9 +74,23 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 switch (_focus)
                 {
                     case 0: _cgdEditorConfigurationLayout.Layout(); break;
-                    case 2: _cgdEditorPermutationsLayout.Layout(position); break;
+                    case 2: _cgdEditorPermutationsLayout.Layout(); break;
                     case 3: _cgdEditorRulesLayout.Layout(); break;
                     case 4: _cgdEditorPartsLayout.Layout(); break;
+                }
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(CgdLocalization.Localize(CgdLocalization.Phrase.PleaseSelectCgd), MessageType.Info);
+                var cgds = FindObjectsOfType<Components.ComboGestureDynamics>()
+                    .OrderBy(found => AnimationUtility.CalculateTransformPath(found.transform, null))
+                    .ToArray();
+                foreach (var found in cgds)
+                {
+                    EditorGUILayout.BeginHorizontal("GroupBox");
+                    EditorGUILayout.LabelField(new GUIContent(AnimationUtility.CalculateTransformPath(found.transform, null)));
+                    EditorGUILayout.ObjectField(GUIContent.none, found, typeof(Components.ComboGestureDynamics));
+                    EditorGUILayout.EndHorizontal();
                 }
             }
 
