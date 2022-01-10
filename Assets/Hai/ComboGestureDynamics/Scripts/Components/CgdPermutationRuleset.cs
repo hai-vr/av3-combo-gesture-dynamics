@@ -24,5 +24,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
                     .ToArray();
             }
         }
+
+        public Cgd.PermutationEffectBehaviour Behaviour(Cgd.HandGesture.HandPose left, Cgd.HandGesture.HandPose right)
+        {
+            return permutationEffectBehaviours[(int) left * 8 + (int) right];
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Hai.ComboGestureDynamics.Scripts.Components;
 using UnityEditor;
 using UnityEngine;
 
@@ -50,27 +51,33 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
         private void OnGUI()
         {
-            if (cgd != null)
-            {
-                cgd.MutateAnyReferenceNormalize();
-            }
-
             // _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.Height(position.height));
             //
 
-            GUILayout.BeginHorizontal("GroupBox");
-            _focus = GUILayout.Toolbar(_focus, new[]
-            {
-                CgdLocalization.Localize(CgdLocalization.Phrase.Configuration),
-                CgdLocalization.Localize(CgdLocalization.Phrase.Animations),
-                CgdLocalization.Localize(CgdLocalization.Phrase.HandGestures),
-                CgdLocalization.Localize(CgdLocalization.Phrase.Rules),
-                CgdLocalization.Localize(CgdLocalization.Phrase.Parts),
-            });
-            GUILayout.EndHorizontal();
-
             if (cgd != null)
             {
+                cgd.MutateAnyReferenceNormalize();
+
+                GUILayout.BeginHorizontal("GroupBox");
+                _focus = GUILayout.Toolbar(_focus, new[]
+                {
+                    CgdLocalization.Localize(CgdLocalization.Phrase.Configuration),
+                    CgdLocalization.Localize(CgdLocalization.Phrase.Animations),
+                    CgdLocalization.Localize(CgdLocalization.Phrase.HandGestures),
+                    CgdLocalization.Localize(CgdLocalization.Phrase.Rules),
+                    CgdLocalization.Localize(CgdLocalization.Phrase.Parts),
+                }.Take(cgd.uiComplexity == Cgd.UiComplexity.Simple ? 4 : 5).ToArray());
+                GUILayout.Space(30);
+                var cgdSerialized = new SerializedObject(cgd);
+                CgdEditorUiExtensions.LocalizedEnumPropertyField(
+                    cgdSerialized.FindProperty(nameof(Components.ComboGestureDynamics.uiComplexity)),
+                    GUIContent.none,
+                    typeof(Cgd.UiComplexity),
+                    GUILayout.Width(100)
+                );
+                cgdSerialized.ApplyModifiedProperties();
+                GUILayout.EndHorizontal();
+
                 switch (_focus)
                 {
                     case 0: _cgdEditorConfigurationLayout.Layout(); break;

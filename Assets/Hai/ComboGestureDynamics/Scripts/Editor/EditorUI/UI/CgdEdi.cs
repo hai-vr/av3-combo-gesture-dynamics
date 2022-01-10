@@ -67,6 +67,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             {
                 return (int) left > (int) right;
             }
+
+            public int ToPermutationEffectBehavioursArrayIndex()
+            {
+                return ((int) left) * 8 + (int) right;
+            }
         }
     }
 }

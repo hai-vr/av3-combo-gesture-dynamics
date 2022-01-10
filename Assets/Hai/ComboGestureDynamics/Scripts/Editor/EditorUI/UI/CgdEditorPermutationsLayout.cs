@@ -23,8 +23,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         private Rect m_permutationAreaRect;
         private Rect m_focusPermutationSelectedRect;
         private Rect m_focusPermutationMirrorRect;
-        private bool _ignoreHandSide;
+        private bool _mirrorHand;
         private CgdPermutationRuleset _selectedRulesetNullable;
+        private int _tool;
 
         private const int PermutationWidth = 100;
         private const int PermutationHeight = 90;
@@ -38,48 +39,142 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         {
             InitIfApplicable();
 
-            EditorGUILayout.BeginHorizontal("GroupBox");
-            CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 7, EditorGUIUtility.singleLineHeight * 7), rect => m_focusAreaLeftRect = rect);
+            EditorGUILayout.BeginVertical("GroupBox");
+            CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(100, float.MaxValue, EditorGUIUtility.singleLineHeight * 10, EditorGUIUtility.singleLineHeight * 10), rect => m_focusAreaLeftRect = rect);
             GUILayout.BeginArea(m_focusAreaLeftRect);
             if (_anySelectedPermutation)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.BeginHorizontal();
                 var leftSide = _selectedPermutation.IsLeft() ? _selectedPermutation : _selectedPermutation.Mirror();
                 var rightSide = leftSide.Mirror();
+                var isBothFists = _selectedPermutation.IsSymmetrical() && _selectedPermutation.left == Cgd.HandGesture.HandPose.Fist;
 
-                CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth * 2, PermutationHeight), rect => m_focusPermutationSelectedRect = rect);
-                GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
-                DrawPermutationBox(leftSide, true);
-                GUILayout.EndArea();
-
-                if (!_selectedPermutation.IsSymmetrical())
-                {
-                    // CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth, PermutationHeight), rect => m_focusPermutationMirrorRect = rect);
-                    GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x + PermutationWidth, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
-                    DrawPermutationBox(rightSide, true);
-                    GUILayout.EndArea();
-                }
-                EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.BeginVertical("GroupBox");
                 var ruleset = new SerializedObject(_selectedRulesetNullable);
                 var permutationEffects = ruleset.FindProperty(nameof(CgdPermutationRuleset.permutationEffectBehaviours));
-                if (permutationEffects.arraySize > 0)
+                var elementSelected = permutationEffects.GetArrayElementAtIndex(_selectedPermutation.ToPermutationEffectBehavioursArrayIndex());
+                var elementNotSelected = permutationEffects.GetArrayElementAtIndex(_selectedPermutation.Mirror().ToPermutationEffectBehavioursArrayIndex());
+                var elementLeftSide = permutationEffects.GetArrayElementAtIndex(leftSide.ToPermutationEffectBehavioursArrayIndex());
+                var elementRightSide = permutationEffects.GetArrayElementAtIndex(rightSide.ToPermutationEffectBehavioursArrayIndex());
+                var sameAnimation = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)).objectReferenceValue == elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)).objectReferenceValue;
+
+                if (!isBothFists)
                 {
-                    var element = permutationEffects.GetArrayElementAtIndex(0);
-                    var tweeningType = element.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.tweeningType));
-                    var tweening = element.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.tweening));
-                    CgdEditorUiExtensions.TweeningBox(tweeningType, tweening);
+                    if (sameAnimation && _mirrorHand)
+                    {
+                        CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth * 2, PermutationHeight), rect => m_focusPermutationSelectedRect = rect);
+                        GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
+                        DrawPermutationBox(leftSide, true);
+                        GUILayout.EndArea();
+
+                        if (!_selectedPermutation.IsSymmetrical())
+                        {
+                            // CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth, PermutationHeight), rect => m_focusPermutationMirrorRect = rect);
+                            GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x + PermutationWidth, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
+                            DrawPermutationBox(rightSide, true);
+                            GUILayout.EndArea();
+                        }
+                    }
+                    else
+                    {
+                        CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth * 2, PermutationHeight), rect => m_focusPermutationSelectedRect = rect);
+                        GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
+                        DrawPermutationBox(_selectedPermutation, true);
+                        GUILayout.EndArea();
+                    }
+                }
+                else
+                {
+                    CgdEditorUiExtensions.RectOnRepaint(() => GUILayoutUtility.GetRect(PermutationWidth * 3, PermutationHeight), rect => m_focusPermutationSelectedRect = rect);
+                    GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
+                    DrawPermutationBox(_selectedPermutation, true);
+                    GUILayout.EndArea();
+                    GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x + PermutationWidth, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
+                    DrawPermutationFist(true);
+                    GUILayout.EndArea();
+                    GUILayout.BeginArea(new Rect(m_focusPermutationSelectedRect.x + PermutationWidth * 2, m_focusPermutationSelectedRect.y, PermutationWidth, m_focusPermutationSelectedRect.height));
+                    DrawPermutationFist(false);
+                    GUILayout.EndArea();
+                }
+
+
+                EditorGUILayout.BeginVertical("GroupBox");
+                if (_cgdEditor.cgd.uiComplexity != Cgd.UiComplexity.Simple)
+                {
+                    _tool = GUILayout.Toolbar(_tool, new[]
+                    {
+                        CgdLocalization.Localize(CgdLocalization.Phrase.Animations),
+                        CgdLocalization.Localize(CgdLocalization.Phrase.Tweening)
+                    });
+                }
+                else
+                {
+                    _tool = 0;
+                }
+                if (_tool == 0)
+                {
+                    if (permutationEffects.arraySize > 0)
+                    {
+                        if (isBothFists)
+                        {
+                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.BothFistsAnimation)));
+                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effectFistLeft)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.LeftFistAnimation)));
+                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effectFistRight)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.RightFistAnimation)));
+                        }
+                        else if (sameAnimation && _mirrorHand)
+                        {
+                            // EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)));
+                            var leftEffect = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect));
+                            var rightEffect = elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect));
+
+                            var previousObject = leftEffect.objectReferenceValue;
+                            var newObject = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)), previousObject, typeof(CgdEffect), true);
+                            if (newObject != previousObject)
+                            {
+                                leftEffect.objectReferenceValue = newObject;
+                                rightEffect.objectReferenceValue = newObject;
+                            }
+                        }
+                        else
+                        {
+                            EditorGUILayout.PropertyField(elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)));
+                        }
+
+                        if (!_selectedPermutation.IsSymmetrical())
+                        {
+                            if (!sameAnimation)
+                            {
+                                if (_cgdEditor.cgd.uiComplexity != Cgd.UiComplexity.Simple)
+                                {
+                                    EditorGUI.BeginDisabledGroup(true);
+                                    EditorGUILayout.Toggle(CgdLocalization.Localize(CgdLocalization.Phrase.MirrorHand), false);
+                                    EditorGUILayout.PropertyField(elementNotSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.MirrorHandAnimation)));
+                                    EditorGUI.EndDisabledGroup();
+                                }
+                            }
+                            else
+                            {
+                                _mirrorHand = EditorGUILayout.Toggle(CgdLocalization.Localize(CgdLocalization.Phrase.MirrorHand), _mirrorHand);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (permutationEffects.arraySize > 0)
+                    {
+                        var tweeningType = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.tweeningType));
+                        var tweening = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.tweening));
+                        CgdEditorUiExtensions.TweeningBox(tweeningType, tweening);
+                    }
                 }
                 ruleset.ApplyModifiedProperties();
                 EditorGUILayout.EndVertical();
-
                 EditorGUILayout.EndHorizontal();
-                EditorGUILayout.Toggle(CgdLocalization.Localize(CgdLocalization.Phrase.IgnoreHandSide), _ignoreHandSide);
             }
+
             GUILayout.EndArea();
-            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.EndVertical();
 
             GUILayout.BeginVertical("GroupBox");
             EditorGUILayout.LabelField(CgdLocalization.Localize(CgdLocalization.Phrase.Permutations, "dummy"), EditorStyles.boldLabel);
@@ -139,11 +234,20 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             GUILayout.BeginVertical();
 
             EditorGUILayout.LabelField(new CgdEdi.Permutation(permutation.left, permutation.right).ToLocalizedName());
-            // GUILayout.Box("", GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 3));
             if (GUILayout.Button(GUIContent.none, GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2)))
             {
                 SelectPermutation(permutation.left, permutation.right);
             }
+            GUILayout.EndVertical();
+        }
+
+        private void DrawPermutationFist(bool isLeftFist)
+        {
+            DrawColoredBackground(isLeftFist ? LeftSymmetricalBg : RightSymmetricalBg);
+
+            GUILayout.BeginVertical();
+
+            EditorGUILayout.LabelField(CgdLocalization.Localize(isLeftFist ? CgdLocalization.Phrase.LeftFist : CgdLocalization.Phrase.RightFist));
             GUILayout.EndVertical();
         }
 
@@ -152,7 +256,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
             _anySelectedPermutation = true;
             _selectedPermutation = new CgdEdi.Permutation(leftPose, rightPose);
 
-            _ignoreHandSide = true;
+            _mirrorHand = true;
         }
 
         private void DrawColoredBackground(Color color)

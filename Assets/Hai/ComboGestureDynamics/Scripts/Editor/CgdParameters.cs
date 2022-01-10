@@ -21,6 +21,8 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         public string TweenShape => $"{_prefix}_{nameof(TweenShape)}";
         public string TweenDuration => $"{_prefix}_{nameof(TweenDuration)}";
         public string ActivationIsHigh => $"{_prefix}_{nameof(ActivationIsHigh)}";
+        public string VariationOfGestureLeftWeight => "GestureLeftWeight_Smoothing"; // TODO: Make this vary depending on user settings
+        public string VariationOfGestureRightWeight => "GestureLeftWeight_Smoothing";
 
         public string SpecificMoodSelector(Cgd.SpecificMoodSelector specificMoodSelector)
         {

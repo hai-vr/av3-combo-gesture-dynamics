@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.Components;
+using Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI;
 using UnityEngine;
 
 namespace Hai.ComboGestureDynamics.Scripts.Editor
@@ -28,11 +29,21 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
             foreach (Transform child in rootRule.transform)
             {
-                var rule = child.GetComponent<CgdRule>();
-                if (rule == null) continue;
+                var permutationRuleset = child.GetComponent<CgdPermutationRuleset>();
+                if (permutationRuleset != null)
+                {
+                    var activations = FlattenPermutationRulesetBelongingToPart(permutationRuleset, part, currentTweening, new CgdSys.ICondition[0], compiledEffect, whenFirstPartCreateDenyList);
+                }
+                else
+                {
 
-                var activations = FlattenRulesBelongingToPart(rule, part, currentTweening, new CgdSys.ICondition[0], compiledEffect, whenFirstPartCreateDenyList);
-                mutableActivations.AddRange(activations);
+                    var rule = child.GetComponent<CgdRule>();
+                    if (rule != null)
+                    {
+                        var activations = FlattenRulesBelongingToPart(rule, part, currentTweening, new CgdSys.ICondition[0], compiledEffect, whenFirstPartCreateDenyList);
+                        mutableActivations.AddRange(activations);
+                    }
+                }
             }
 
             mutableActivations.Add(new CgdSys.Activation
@@ -43,6 +54,70 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             });
 
             return mutableActivations.ToArray();
+        }
+
+        private CgdSys.Activation[] FlattenPermutationRulesetBelongingToPart(CgdPermutationRuleset permutationRuleset, CgdPart part, CgdSys.Tweening inheritedTweening, CgdSys.ICondition[] currentConditions, CgdSys.CompiledEffect inheritedEffect, Cgd.PropertyMask[] whenFirstPartCreateDenyList)
+        {
+            if (!permutationRuleset.parts.Contains(part)) return new CgdSys.Activation[0];
+
+            var mutableTraversal = new List<CgdCondition>();
+            var permutationConditions = permutationRuleset.conditions.SelectMany(condition => BuildIntermediaryCondition(condition, mutableTraversal)).ToArray();
+            var baseConditions = currentConditions.Concat(permutationConditions).ToArray();
+
+            var activations = permutationRuleset.permutationEffectBehaviours
+                .Select((behaviour, index) =>
+                {
+                    // TODO: Analogs when Fist, Both Fists (+ left and right effect separately), and Vive Advanced Controls
+                    // TODO: Vive Advanced Controls
+                    var (left, right) = Cgd.HandGesture.FromPermutationEffectBehavioursArrayIndex(index);
+                    CgdSys.CompiledEffect compiledEffect;
+                    if (left.pose == Cgd.HandGesture.HandPose.Fist && right.pose == Cgd.HandGesture.HandPose.Fist)
+                    {
+                        // TODO: Both Fists
+                        compiledEffect = PermutationCompileRegular(part, whenFirstPartCreateDenyList, behaviour, inheritedEffect);
+                    }
+                    else if (left.pose == Cgd.HandGesture.HandPose.Fist || right.pose == Cgd.HandGesture.HandPose.Fist)
+                    {
+                        var rest = permutationRuleset.Behaviour(Cgd.HandGesture.HandPose.Neutral, Cgd.HandGesture.HandPose.Neutral).effect;
+                        var handSide = left.pose == Cgd.HandGesture.HandPose.Fist ? Cgd.HandGesture.HandSide.Left : Cgd.HandGesture.HandSide.Right;
+                        compiledEffect = PermutationCompileFist(part, whenFirstPartCreateDenyList, behaviour, rest, inheritedEffect, handSide);
+                    }
+                    else
+                    {
+                        compiledEffect = PermutationCompileRegular(part, whenFirstPartCreateDenyList, behaviour, inheritedEffect);
+                    }
+                    return new CgdSys.Activation
+                    {
+                        conditions = baseConditions.Concat(HandGestureCondition(right)).Concat(HandGestureCondition(left)).ToArray(),
+                        tweening = behaviour.tweeningType == Cgd.TweeningType.Inherited ? inheritedTweening : Remap(behaviour.tweening),
+                        compiledEffect = compiledEffect
+                    };
+                })
+                .ToArray();
+            return activations;
+        }
+
+        private CgdSys.CompiledEffect PermutationCompileRegular(CgdPart part, Cgd.PropertyMask[] whenFirstPartCreateDenyList, Cgd.PermutationEffectBehaviour behaviour, CgdSys.CompiledEffect inheritedEffect)
+        {
+            return new CgdSysCompileEffectBehaviour(new Cgd.EffectBehaviour
+            {
+                effectBehaviourType = Cgd.EffectBehaviourType.Normal,
+                effect = behaviour.effect
+            }, part, inheritedEffect, whenFirstPartCreateDenyList, _cgdParameters).Compile();
+        }
+
+        private CgdSys.CompiledEffect PermutationCompileFist(CgdPart part, Cgd.PropertyMask[] whenFirstPartCreateDenyList, Cgd.PermutationEffectBehaviour behaviour, CgdEffect rest, CgdSys.CompiledEffect inheritedEffect, Cgd.HandGesture.HandSide handSide)
+        {
+            // TODO: "Rest" is the inherited effect when the PermutationRuleset is a stencil
+            return new CgdSysCompileEffectBehaviour(new Cgd.EffectBehaviour
+            {
+                effectBehaviourType = Cgd.EffectBehaviourType.Analog,
+                effect = behaviour.effect,
+                analogMin = 0f,
+                analogMax = 1f,
+                analogParameterName = handSide == Cgd.HandGesture.HandSide.Left ? _cgdParameters.VariationOfGestureLeftWeight : _cgdParameters.VariationOfGestureRightWeight,
+                restOptional = rest
+            }, part, inheritedEffect, whenFirstPartCreateDenyList, _cgdParameters).Compile();
         }
 
         private CgdSys.Activation[] FlattenRulesBelongingToPart(CgdRule currentRule, CgdPart part, CgdSys.Tweening inheritedTweening, CgdSys.ICondition[] inheritedConditions, CgdSys.CompiledEffect previousEffect, Cgd.PropertyMask[] whenFirstPartCreateDenyList)
@@ -59,10 +134,17 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
             foreach (Transform child in currentRule.transform)
             {
-                var childRule = child.GetComponent<CgdRule>();
-                if (childRule == null) continue;
+                var permutationRuleset = child.GetComponent<CgdPermutationRuleset>();
+                if (permutationRuleset != null)
+                {
+                    var activations = FlattenPermutationRulesetBelongingToPart(permutationRuleset, part, currentTweening, currentConditions, passEffect, whenFirstPartCreateDenyList);
+                }
 
-                mutableActivations.AddRange(FlattenRulesBelongingToPart(childRule, part, currentTweening, currentConditions, passEffect, whenFirstPartCreateDenyList));
+                var childRule = child.GetComponent<CgdRule>();
+                if (childRule != null)
+                {
+                    mutableActivations.AddRange(FlattenRulesBelongingToPart(childRule, part, currentTweening, currentConditions, passEffect, whenFirstPartCreateDenyList));
+                }
             }
 
             if (compiledEffectNullable != null && (currentRule.parts.Length == 0 || currentRule.parts.Contains(part)))

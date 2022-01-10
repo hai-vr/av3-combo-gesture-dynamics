@@ -58,7 +58,7 @@ public class CgdLocalization
         BoolIsFalse,
         MainPart,
         SecondaryParts,
-        IgnoreHandSide,
+        MirrorHand,
         TweeningType,
         TweeningEntranceDurationSeconds,
         TweeningImportance,
@@ -75,7 +75,15 @@ public class CgdLocalization
         FloatParameters,
         BoolParameters,
         Search,
-        HandGestures
+        HandGestures,
+        Animation,
+        LeftFistAnimation,
+        RightFistAnimation,
+        LeftFist,
+        RightFist,
+        BothFistsAnimation,
+        Tweening,
+        MirrorHandAnimation
     }
 
     public static string EnumLocalize(Enum enumValue, Type enumType)

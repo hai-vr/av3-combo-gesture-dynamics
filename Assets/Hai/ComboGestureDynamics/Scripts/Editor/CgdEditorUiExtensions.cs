@@ -250,12 +250,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             }
         }
 
-        public static void LocalizedEnumPropertyField(SerializedProperty serializedProperty, GUIContent guiContent, Type enumType)
+        public static void LocalizedEnumPropertyField(SerializedProperty serializedProperty, GUIContent guiContent, Type enumType, params GUILayoutOption[] guiLayoutOptions)
         {
             var names = LocalizedEnumNames(enumType);
             if (serializedProperty.hasMultipleDifferentValues)
             {
-                var shifted = EditorGUILayout.Popup(guiContent, 0, new[] {""}.Concat(names).ToArray());
+                var shifted = EditorGUILayout.Popup(guiContent, 0, new[] {""}.Concat(names).ToArray(), guiLayoutOptions);
                 if (shifted != 0)
                 {
                     var choice = shifted - 1;
@@ -264,7 +264,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             }
             else
             {
-                var indexed = EditorGUILayout.Popup(guiContent, serializedProperty.intValue, names.ToArray());
+                var indexed = EditorGUILayout.Popup(guiContent, serializedProperty.intValue, names.ToArray(), guiLayoutOptions);
                 if (indexed != serializedProperty.intValue)
                 {
                     serializedProperty.intValue = indexed;

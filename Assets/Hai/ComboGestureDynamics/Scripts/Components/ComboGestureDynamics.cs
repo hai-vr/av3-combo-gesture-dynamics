@@ -17,6 +17,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public bool generateMoodSelector = true;
         public bool generateEyeTracking = true;
         public bool generateFistSmoothing = true;
+        public Cgd.UiComplexity uiComplexity;
 
         public void MutateAnyReferenceNormalize()
         {

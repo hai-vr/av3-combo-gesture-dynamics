@@ -147,6 +147,19 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
                 Gun,
                 ThumbsUp
             }
+
+            public static (HandGesture, HandGesture) FromPermutationEffectBehavioursArrayIndex(int arrayIndex)
+            {
+                return (new HandGesture
+                {
+                    side = HandSide.Left,
+                    pose = (HandPose) (arrayIndex / 8)
+                }, new HandGesture
+                {
+                    side = HandSide.Right,
+                    pose = (HandPose) (arrayIndex % 8)
+                });
+            }
         }
 
         [Serializable]
@@ -284,9 +297,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct PermutationEffectBehaviour
         {
-            public EffectBehaviour effect;
-            public EffectBehaviour effectFistLeft;
-            public EffectBehaviour effectFistRight;
+            public CgdEffect effect;
+            public CgdEffect effectFistLeft;
+            public CgdEffect effectFistRight;
             public TweeningType tweeningType;
             public Tweening tweening;
         }
@@ -294,6 +307,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public enum PermutationStencil
         {
             None, DefinedAndCombos, Defined
+        }
+
+        public enum UiComplexity
+        {
+            Simple, Advanced
         }
     }
 }
