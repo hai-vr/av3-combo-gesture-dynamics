@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Hai.BlendshapeViewer.Scripts.Editor;
+// using Hai.BlendshapeViewer.Scripts.Editor;
 using Hai.ComboGestureDynamics.Scripts.Components;
 using UnityEngine;
 
@@ -59,23 +59,23 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
         private void Render(GameObject copy)
         {
-            var viewer = new ModifiedBlendshapeViewerGenerator();
-            try
-            {
-                viewer.Begin(copy, 0f, true);
-                var head = copy.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Head);
-                viewer.ParentCameraTo(head);
-
-                while (_queue.Count > 0)
-                {
-                    var cgdEffect = _queue.Dequeue();
-                    viewer.Render(cgdEffect.regular.insertedClips[0].clip, _effectToTexture[cgdEffect]);
-                }
-            }
-            finally
-            {
-                viewer.Terminate();
-            }
+            // var viewer = new ModifiedBlendshapeViewerGenerator();
+            // try
+            // {
+            //     viewer.Begin(copy, 0f, true);
+            //     var head = copy.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Head);
+            //     viewer.ParentCameraTo(head);
+            //
+            //     while (_queue.Count > 0)
+            //     {
+            //         var cgdEffect = _queue.Dequeue();
+            //         viewer.Render(cgdEffect.regular.insertedClips[0].clip, _effectToTexture[cgdEffect]);
+            //     }
+            // }
+            // finally
+            // {
+            //     viewer.Terminate();
+            // }
         }
     }
 }
