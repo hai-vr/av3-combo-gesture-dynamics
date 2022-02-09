@@ -6,6 +6,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
     public class ComboGestureDynamics : MonoBehaviour
     {
         public VRCAvatarDescriptor avatar;
+        public Ee2Avatar previewAvatar;
 
         public CgdRootRule rootRule;
         public CgdPart mainPart;

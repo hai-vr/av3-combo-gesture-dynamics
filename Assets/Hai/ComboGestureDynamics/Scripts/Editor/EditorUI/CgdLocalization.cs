@@ -76,14 +76,17 @@ public class CgdLocalization
         BoolParameters,
         Search,
         HandGestures,
-        Animation,
+        Effect,
         LeftFistAnimation,
         RightFistAnimation,
         LeftFist,
         RightFist,
         BothFistsAnimation,
         Tweening,
-        MirrorHandAnimation
+        MirrorHandAnimation,
+        Rendering,
+        Animation,
+        CreateNewMotionFromAnimation
     }
 
     public static string EnumLocalize(Enum enumValue, Type enumType)

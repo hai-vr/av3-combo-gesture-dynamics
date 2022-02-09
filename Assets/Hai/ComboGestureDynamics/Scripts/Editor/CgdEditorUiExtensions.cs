@@ -300,5 +300,57 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .Select(enumValue => CgdLocalization.EnumLocalize(enumValue, enumType))
                 .ToArray();
         }
+
+        public static CgdEffect FindOrCreateNewCgdEffectForMotion(Components.ComboGestureDynamics cgd, Motion wantedMotion)
+        {
+            var matchingEffects = cgd.effectsLibrary.GetComponents<CgdEffect>().Where(effect =>
+            {
+                if (wantedMotion is BlendTree)
+                {
+                    return effect.effectType == Cgd.EffectType.Custom && effect.customBlendTree == wantedMotion;
+                }
+                else
+                {
+                    return effect.effectType == Cgd.EffectType.Regular
+                           && effect.regular.insertedClips.Length == 1
+                           && effect.regular.insertedClips[0].clip == wantedMotion;
+                }
+            }).ToArray();
+
+            // TODO: What to do if there is more than one matching effect?
+            if (matchingEffects.Length > 1)
+            {
+                return matchingEffects[0];
+            }
+
+            return CreateNewCgdEffectForMotion(cgd, wantedMotion);
+        }
+
+        private static CgdEffect CreateNewCgdEffectForMotion(Components.ComboGestureDynamics cgd, Motion newMotion)
+        {
+            var newItem = new GameObject(newMotion.name);
+            Undo.RegisterCreatedObjectUndo(newItem, CgdLocalization.Localize(CgdLocalization.Phrase.CreateNewMotionFromAnimation));
+            newItem.transform.parent = cgd.effectsLibrary;
+            var effect = Undo.AddComponent<CgdEffect>(newItem);
+            if (newMotion is BlendTree)
+            {
+                effect.effectType = Cgd.EffectType.Custom;
+                effect.customBlendTree = newMotion;
+            }
+            else
+            {
+                effect.effectType = Cgd.EffectType.Regular;
+                effect.regular.insertedClips = new[]
+                {
+                    new Cgd.InsertedClip
+                    {
+                        clip = (AnimationClip) newMotion,
+                        rejectedProperties = new Cgd.PropertyMask[0]
+                    }
+                };
+            }
+
+            return effect;
+        }
     }
 }

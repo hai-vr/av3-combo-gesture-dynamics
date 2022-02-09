@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.Components;
 using UnityEditor;
 using UnityEngine;
@@ -11,8 +12,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         private int _focus;
 
         public Components.ComboGestureDynamics cgd;
+        public CgdRenderQueue renderQueue;
 
         private CgdEditorConfigurationLayout _cgdEditorConfigurationLayout;
+        private CgdEditorEffectsLayout _cgdEditorEffectsLayout;
         private CgdEditorPermutationsLayout _cgdEditorPermutationsLayout;
         private CgdEditorRulesLayout _cgdEditorRulesLayout;
         private CgdEditorPartsLayout _cgdEditorPartsLayout;
@@ -27,9 +30,11 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         private void OnEnable()
         {
             _cgdEditorConfigurationLayout = new CgdEditorConfigurationLayout(this);
+            _cgdEditorEffectsLayout = new CgdEditorEffectsLayout(this);
             _cgdEditorPermutationsLayout = new CgdEditorPermutationsLayout(this);
             _cgdEditorRulesLayout = new CgdEditorRulesLayout(this);
             _cgdEditorPartsLayout = new CgdEditorPartsLayout(this);
+            renderQueue = new CgdRenderQueue(this);
         }
 
         private void OnInspectorUpdate()
@@ -81,6 +86,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 switch (_focus)
                 {
                     case 0: _cgdEditorConfigurationLayout.Layout(); break;
+                    case 1: _cgdEditorEffectsLayout.Layout(); break;
                     case 2: _cgdEditorPermutationsLayout.Layout(); break;
                     case 3: _cgdEditorRulesLayout.Layout(); break;
                     case 4: _cgdEditorPartsLayout.Layout(); break;
@@ -103,11 +109,21 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
             //
             // GUILayout.EndScrollView();
+            var rendered = renderQueue.TryRender(cgd);
+            if (rendered)
+            {
+                Repaint();
+            }
         }
 
         private void OnHierarchyChange()
         {
             Repaint();
+        }
+
+        private void OnFocus()
+        {
+            renderQueue.ForceClearAll();
         }
     }
 

@@ -254,6 +254,20 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             None, Important
         }
 
+        // [Serializable]
+        // public struct EffectReference
+        // {
+        //     public EffectReferenceType effectReferenceType;
+        //     public Motion motion;
+        //     public CgdEffect effect;
+        // }
+        //
+        // public enum EffectReferenceType
+        // {
+        //     Motion,
+        //     Effect
+        // }
+
         [Serializable]
         public struct EffectBehaviour
         {
