@@ -24,7 +24,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct InheritedEffect
         {
-            public CgdEffect effect;
+            public & effect;
             public PropertyMask[] rejectedProperties;
         }
 
@@ -178,7 +178,24 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public struct Position
         {
             public Vector2[] position;
+            public Expression expression;
+        }
+
+        [Serializable]
+        public struct Expression
+        {
+            public AnimationClip clip;
             public CgdEffect effect;
+
+            public bool IsDefined()
+            {
+                return clip != null || effect != null;
+            }
+
+            public void MutateAnyReferenceNormalize()
+            {
+                effect.MutateAnyReferenceNormalize();
+            }
         }
 
         [Serializable]
@@ -275,30 +292,30 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public string analogParameterName;
             public float analogMin; // = 0f;
             public float analogMax; // = 1f;
-            public CgdEffect effect;
-            public CgdEffect restOptional;
+            public Expression effect;
+            public Expression restOptional;
 
-            public CgdEffect[] DefensiveActiveEffects()
+            public Expression[] DefensiveActiveEffects()
             {
                 switch (effectBehaviourType)
                 {
                     case EffectBehaviourType.Normal: return NonNull(new[] {effect});
                     case EffectBehaviourType.Analog: return NonNull(new[] {effect, restOptional});
-                    case EffectBehaviourType.None: return new CgdEffect[0];
+                    case EffectBehaviourType.None: return new Expression[0];
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            private CgdEffect[] NonNull(CgdEffect[] things)
+            private Expression[] NonNull(Expression[] things)
             {
-                return things.Where(cgdEffect => cgdEffect != null).ToArray();
+                return things.Where(expression => expression.IsDefined()).ToArray();
             }
 
             public void MutateAnyReferenceNormalize()
             {
-                if (effect != null) effect.MutateAnyReferenceNormalize();
-                if (restOptional != null) restOptional.MutateAnyReferenceNormalize();
+                if (effect.IsDefined()) effect.MutateAnyReferenceNormalize();
+                if (restOptional.IsDefined()) restOptional.MutateAnyReferenceNormalize();
             }
         }
 
@@ -311,9 +328,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct PermutationEffectBehaviour
         {
-            public CgdEffect effect;
-            public CgdEffect effectFistLeft;
-            public CgdEffect effectFistRight;
+            public Expression expression;
+            public Expression expressionFistLeft;
+            public Expression expressionFistRight;
             public TweeningType tweeningType;
             public Tweening tweening;
         }

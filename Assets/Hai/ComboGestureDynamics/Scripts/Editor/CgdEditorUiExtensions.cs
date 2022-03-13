@@ -14,8 +14,8 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
     {
         public static EditorCurveBinding[] FindAllProperties(Components.ComboGestureDynamics dynamics)
         {
-            return FindAllEffects(dynamics)
-                .SelectMany(FindAllPropertiesOfEffect)
+            return FindAllExpressions(dynamics)
+                .SelectMany(FindAllPropertiesOfExpression)
                 .Distinct()
                 .OrderBy(binding => binding.path)
                 .ThenBy(binding => binding.type)
@@ -23,8 +23,22 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .ToArray();
         }
 
-        private static EditorCurveBinding[] FindAllPropertiesOfEffect(CgdEffect effect)
+        private static EditorCurveBinding[] FindAllPropertiesOfExpression(Cgd.Expression expression)
         {
+            if (expression.effect != null)
+            {
+                return FindAllPropertiesOfEffect(expression);
+            }
+            else
+            {
+                // FIXME: Expression null case
+                return expression.clip == null ? new EditorCurveBinding[0] : AnimationUtility.GetCurveBindings(expression.clip);
+            }
+        }
+
+        private static EditorCurveBinding[] FindAllPropertiesOfEffect(Cgd.Expression expression)
+        {
+            var effect = expression.effect;
             switch (effect.effectType)
             {
                 case Cgd.EffectType.Regular:
@@ -34,7 +48,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     return new[] {inheritedProperties, insertedProperties, propertyMasks}.SelectMany(bindings => bindings).ToArray();
                 case Cgd.EffectType.Blend:
                     return effect.blend.positions
-                        .SelectMany(position => FindAllPropertiesOfEffect(position.effect))
+                        .SelectMany(position => FindAllPropertiesOfExpression(position.expression))
                         .ToArray();
                 case Cgd.EffectType.Custom:
                     return AllAnimationsOf((BlendTree) effect.customBlendTree)
@@ -95,7 +109,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .ToArray();
         }
 
-        private static CgdEffect[] FindAllEffects(Components.ComboGestureDynamics dynamics)
+        private static CgdEffect[] FindAllExpressions(Components.ComboGestureDynamics dynamics)
         {
             var mutableEffects = new List<CgdEffect>();
             Iterate(mutableEffects, dynamics.rootRule.transform);

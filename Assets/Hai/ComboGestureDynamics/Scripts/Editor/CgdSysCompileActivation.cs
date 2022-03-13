@@ -78,7 +78,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                     }
                     else if (left.pose == Cgd.HandGesture.HandPose.Fist || right.pose == Cgd.HandGesture.HandPose.Fist)
                     {
-                        var rest = permutationRuleset.Behaviour(Cgd.HandGesture.HandPose.Neutral, Cgd.HandGesture.HandPose.Neutral).effect;
+                        var rest = permutationRuleset.Behaviour(Cgd.HandGesture.HandPose.Neutral, Cgd.HandGesture.HandPose.Neutral).expression;
                         var handSide = left.pose == Cgd.HandGesture.HandPose.Fist ? Cgd.HandGesture.HandSide.Left : Cgd.HandGesture.HandSide.Right;
                         compiledEffect = PermutationCompileFist(part, whenFirstPartCreateDenyList, behaviour, rest, inheritedEffect, handSide);
                     }
@@ -102,7 +102,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             return new CgdSysCompileEffectBehaviour(new Cgd.EffectBehaviour
             {
                 effectBehaviourType = Cgd.EffectBehaviourType.Normal,
-                effect = behaviour.effect
+                expression = behaviour.expression
             }, part, inheritedEffect, whenFirstPartCreateDenyList, _cgdParameters).Compile();
         }
 
@@ -112,7 +112,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             return new CgdSysCompileEffectBehaviour(new Cgd.EffectBehaviour
             {
                 effectBehaviourType = Cgd.EffectBehaviourType.Analog,
-                effect = behaviour.effect,
+                expression = behaviour.expression,
                 analogMin = 0f,
                 analogMax = 1f,
                 analogParameterName = handSide == Cgd.HandGesture.HandSide.Left ? _cgdParameters.VariationOfGestureLeftWeight : _cgdParameters.VariationOfGestureRightWeight,

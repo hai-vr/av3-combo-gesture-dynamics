@@ -55,7 +55,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 var elementNotSelected = permutationEffects.GetArrayElementAtIndex(_selectedPermutation.Mirror().ToPermutationEffectBehavioursArrayIndex());
                 var elementLeftSide = permutationEffects.GetArrayElementAtIndex(leftSide.ToPermutationEffectBehavioursArrayIndex());
                 var elementRightSide = permutationEffects.GetArrayElementAtIndex(rightSide.ToPermutationEffectBehavioursArrayIndex());
-                var sameAnimation = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)).objectReferenceValue == elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)).objectReferenceValue;
+                var sameAnimation = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)).objectReferenceValue == elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)).objectReferenceValue;
 
                 if (!isBothFists)
                 {
@@ -116,15 +116,15 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                     {
                         if (isBothFists)
                         {
-                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.BothFistsAnimation)));
-                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effectFistLeft)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.LeftFistAnimation)));
-                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effectFistRight)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.RightFistAnimation)));
+                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.BothFistsAnimation)));
+                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expressionFistLeft)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.LeftFistAnimation)));
+                            EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expressionFistRight)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.RightFistAnimation)));
                         }
                         else if (sameAnimation && _mirrorHand)
                         {
                             // EditorGUILayout.PropertyField(elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)));
-                            var leftEffect = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect));
-                            var rightEffect = elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect));
+                            var leftEffect = elementLeftSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression));
+                            var rightEffect = elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression));
 
                             var previousObject = leftEffect.objectReferenceValue;
                             var newObject = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Effect)), previousObject, typeof(CgdEffect), true);
@@ -136,12 +136,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                         }
                         else
                         {
-                            EditorGUILayout.PropertyField(elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Effect)));
+                            EditorGUILayout.PropertyField(elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Effect)));
                             var newMotion = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)), null, typeof(Motion)) as Motion;
                             if (newMotion != null)
                             {
                                 var generatedEffect = CgdEditorUiExtensions.FindOrCreateNewCgdEffectForMotion(_cgdEditor.cgd, newMotion);
-                                elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)).objectReferenceValue = generatedEffect;
+                                elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)).objectReferenceValue = generatedEffect;
                             }
                         }
 
@@ -153,7 +153,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                                 {
                                     EditorGUI.BeginDisabledGroup(true);
                                     EditorGUILayout.Toggle(CgdLocalization.Localize(CgdLocalization.Phrase.MirrorHand), false);
-                                    EditorGUILayout.PropertyField(elementNotSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.effect)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.MirrorHandAnimation)));
+                                    EditorGUILayout.PropertyField(elementNotSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.MirrorHandAnimation)));
                                     EditorGUI.EndDisabledGroup();
                                 }
                             }
@@ -241,7 +241,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
             EditorGUILayout.LabelField(new CgdEdi.Permutation(permutation.left, permutation.right).ToLocalizedName());
 
-            var effect = _selectedRulesetNullable.permutationEffectBehaviours[permutation.ToPermutationEffectBehavioursArrayIndex()].effect;
+            var effect = _selectedRulesetNullable.permutationEffectBehaviours[permutation.ToPermutationEffectBehavioursArrayIndex()].expression;
 
             var button = effect != null
                 ? GUILayout.Button(_cgdEditor.renderQueue.RequireRender(effect), GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2))
