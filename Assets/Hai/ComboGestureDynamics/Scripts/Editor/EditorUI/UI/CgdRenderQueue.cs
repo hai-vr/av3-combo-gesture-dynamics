@@ -7,27 +7,27 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 {
     public class CgdRenderQueue
     {
-        private readonly Dictionary<CgdEffect, Texture2D> _effectToTexture;
-        private Queue<CgdEffect> _queue;
+        private readonly Dictionary<AnimationClip, Texture2D> _clipToTexture;
+        private Queue<AnimationClip> _queue;
 
         public CgdRenderQueue(CgdEditor cgdEditor)
         {
-            _effectToTexture = new Dictionary<CgdEffect, Texture2D>();
-            _queue = new Queue<CgdEffect>();
+            _clipToTexture = new Dictionary<AnimationClip, Texture2D>();
+            _queue = new Queue<AnimationClip>();
         }
 
         public void ForceClearAll()
         {
-            _effectToTexture.Clear();
+            _clipToTexture.Clear();
             _queue.Clear();
         }
 
-        public Texture2D RequireRender(CgdEffect effect)
+        public Texture2D RequireRender(AnimationClip effect)
         {
-            if (_effectToTexture.ContainsKey(effect)) return _effectToTexture[effect];
+            if (_clipToTexture.ContainsKey(effect)) return _clipToTexture[effect];
 
             var texture = new Texture2D(100, 100);
-            _effectToTexture[effect] = texture; // TODO: Dimensions
+            _clipToTexture[effect] = texture; // TODO: Dimensions
 
             _queue.Enqueue(effect);
 

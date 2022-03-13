@@ -24,7 +24,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct InheritedEffect
         {
-            public & effect;
+            public CgdEffect effect;
             public PropertyMask[] rejectedProperties;
         }
 
@@ -185,16 +185,16 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         public struct Expression
         {
             public AnimationClip clip;
-            public CgdEffect effect;
+            // public CgdEffect effect;
 
             public bool IsDefined()
             {
-                return clip != null || effect != null;
+                return clip != null; // || effect != null;
             }
 
             public void MutateAnyReferenceNormalize()
             {
-                effect.MutateAnyReferenceNormalize();
+                // effect.MutateAnyReferenceNormalize();
             }
         }
 
@@ -292,15 +292,15 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public string analogParameterName;
             public float analogMin; // = 0f;
             public float analogMax; // = 1f;
-            public Expression effect;
+            public Expression expression;
             public Expression restOptional;
 
-            public Expression[] DefensiveActiveEffects()
+            public Expression[] DefensiveActiveExpressions()
             {
                 switch (effectBehaviourType)
                 {
-                    case EffectBehaviourType.Normal: return NonNull(new[] {effect});
-                    case EffectBehaviourType.Analog: return NonNull(new[] {effect, restOptional});
+                    case EffectBehaviourType.Normal: return NonNull(new[] {expression});
+                    case EffectBehaviourType.Analog: return NonNull(new[] {expression, restOptional});
                     case EffectBehaviourType.None: return new Expression[0];
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -314,7 +314,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
 
             public void MutateAnyReferenceNormalize()
             {
-                if (effect.IsDefined()) effect.MutateAnyReferenceNormalize();
+                if (expression.IsDefined()) expression.MutateAnyReferenceNormalize();
                 if (restOptional.IsDefined()) restOptional.MutateAnyReferenceNormalize();
             }
         }

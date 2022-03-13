@@ -25,20 +25,19 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
 
         private static EditorCurveBinding[] FindAllPropertiesOfExpression(Cgd.Expression expression)
         {
-            if (expression.effect != null)
-            {
-                return FindAllPropertiesOfEffect(expression);
-            }
-            else
-            {
+            // if (expression.effect != null)
+            // {
+                // return FindAllPropertiesOfEffect(expression);
+            // }
+            // else
+            // {
                 // FIXME: Expression null case
                 return expression.clip == null ? new EditorCurveBinding[0] : AnimationUtility.GetCurveBindings(expression.clip);
-            }
+            // }
         }
 
-        private static EditorCurveBinding[] FindAllPropertiesOfEffect(Cgd.Expression expression)
+        private static EditorCurveBinding[] FindAllPropertiesOfEffect(CgdEffect effect)
         {
-            var effect = expression.effect;
             switch (effect.effectType)
             {
                 case Cgd.EffectType.Regular:
@@ -109,15 +108,15 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .ToArray();
         }
 
-        private static CgdEffect[] FindAllExpressions(Components.ComboGestureDynamics dynamics)
+        private static Cgd.Expression[] FindAllExpressions(Components.ComboGestureDynamics dynamics)
         {
-            var mutableEffects = new List<CgdEffect>();
-            Iterate(mutableEffects, dynamics.rootRule.transform);
-            mutableEffects.AddRange(dynamics.rootRule.effectBehaviour.DefensiveActiveEffects());
-            return mutableEffects.ToArray();
+            var mutableExpressions = new List<Cgd.Expression>();
+            Iterate(mutableExpressions, dynamics.rootRule.transform);
+            mutableExpressions.AddRange(dynamics.rootRule.effectBehaviour.DefensiveActiveExpressions());
+            return mutableExpressions.ToArray();
         }
 
-        private static void Iterate(List<CgdEffect> mutableEffectsResult, Transform transformToIterate)
+        private static void Iterate(List<Cgd.Expression> mutableEffectsResult, Transform transformToIterate)
         {
             foreach (Transform transforms in transformToIterate)
             {
@@ -125,7 +124,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 if (rule == null) continue;
 
                 Iterate(mutableEffectsResult, transforms);
-                mutableEffectsResult.AddRange(rule.effectBehaviour.DefensiveActiveEffects());
+                mutableEffectsResult.AddRange(rule.effectBehaviour.DefensiveActiveExpressions());
             }
         }
 

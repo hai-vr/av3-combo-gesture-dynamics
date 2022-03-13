@@ -243,8 +243,8 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
             var effect = _selectedRulesetNullable.permutationEffectBehaviours[permutation.ToPermutationEffectBehavioursArrayIndex()].expression;
 
-            var button = effect != null
-                ? GUILayout.Button(_cgdEditor.renderQueue.RequireRender(effect), GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2))
+            var button = effect.clip != null
+                ? GUILayout.Button(_cgdEditor.renderQueue.RequireRender(effect.clip), GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2))
                 : GUILayout.Button(GUIContent.none, GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2));
             if (button)
             {

@@ -114,7 +114,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI
             switch (effectBehaviourType)
             {
                 case Cgd.EffectBehaviourType.Normal:
-                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.effect)));
+                    EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.expression)));
                     break;
                 case Cgd.EffectBehaviourType.Analog:
                     EditorGUILayout.PropertyField(effectBehaviour.FindPropertyRelative(nameof(Cgd.EffectBehaviour.analogParameterName)));
