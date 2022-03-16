@@ -36,33 +36,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             // }
         }
 
-        private static EditorCurveBinding[] FindAllPropertiesOfEffect(CgdEffect effect)
-        {
-            switch (effect.effectType)
-            {
-                case Cgd.EffectType.Regular:
-                    var inheritedProperties = FindAllInheritedEffectsProperties(effect);
-                    var insertedProperties = FindAllInsertedClipsProperties(effect);
-                    var propertyMasks = FindAllDirectProperties(effect);
-                    return new[] {inheritedProperties, insertedProperties, propertyMasks}.SelectMany(bindings => bindings).ToArray();
-                case Cgd.EffectType.Blend:
-                    return effect.blend.positions
-                        .SelectMany(position => FindAllPropertiesOfExpression(position.expression))
-                        .ToArray();
-                case Cgd.EffectType.Custom:
-                    return AllAnimationsOf((BlendTree) effect.customBlendTree)
-                        .SelectMany(AnimationUtility.GetCurveBindings)
-                        .ToArray();
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private static EditorCurveBinding[] FindAllDirectProperties(CgdEffect effect)
-        {
-            return effect.regular.properties.Select(value => ToEditorCurveBinding(value.property)).ToArray();
-        }
-
         private static EditorCurveBinding ToEditorCurveBinding(Cgd.PropertyMask propertyMask)
         {
             return new EditorCurveBinding

@@ -162,17 +162,17 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             }
         }
 
-        [Serializable]
-        public struct Blend
-        {
-            public BlendType blendType;
-            public Position[] positions;
-
-            public void MutateAnyReferenceNormalize()
-            {
-                if (positions == null) positions = new Position[0];
-            }
-        }
+        // [Serializable]
+        // public struct Blend
+        // {
+        //     public BlendType blendType;
+        //     public Position[] positions;
+        //
+        //     public void MutateAnyReferenceNormalize()
+        //     {
+        //         if (positions == null) positions = new Position[0];
+        //     }
+        // }
 
         [Serializable]
         public struct Position
@@ -210,22 +210,22 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             Directional, Cartesian, Simple1D
         }
 
-        [Serializable]
-        public struct Regular
-        {
-            public InheritedEffect[] inheritedEffects; // = new InheritedEffect[0];
-            public InsertedClip[] insertedClips; // = new InsertedClip[0];
-            public PropertyValue[] properties; // = new PropertyValue[0];
-            public Tag[] tags; // = new Tag[0];
-
-            public void MutateAnyReferenceNormalize()
-            {
-                if (inheritedEffects == null) inheritedEffects = new InheritedEffect[0];
-                if (insertedClips == null) insertedClips = new InsertedClip[0];
-                if (properties == null) properties = new PropertyValue[0];
-                if (tags == null) tags = new Tag[0];
-            }
-        }
+        // [Serializable]
+        // public struct Regular
+        // {
+        //     public InheritedEffect[] inheritedEffects; // = new InheritedEffect[0];
+        //     public InsertedClip[] insertedClips; // = new InsertedClip[0];
+        //     public PropertyValue[] properties; // = new PropertyValue[0];
+        //     public Tag[] tags; // = new Tag[0];
+        //
+        //     public void MutateAnyReferenceNormalize()
+        //     {
+        //         if (inheritedEffects == null) inheritedEffects = new InheritedEffect[0];
+        //         if (insertedClips == null) insertedClips = new InsertedClip[0];
+        //         if (properties == null) properties = new PropertyValue[0];
+        //         if (tags == null) tags = new Tag[0];
+        //     }
+        // }
 
         [Serializable]
         public struct InsertedClip
