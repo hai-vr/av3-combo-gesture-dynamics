@@ -15,7 +15,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         public CgdRenderQueue renderQueue;
 
         private CgdEditorConfigurationLayout _cgdEditorConfigurationLayout;
-        private CgdEditorEffectsLayout _cgdEditorEffectsLayout;
         private CgdEditorPermutationsLayout _cgdEditorPermutationsLayout;
         private CgdEditorRulesLayout _cgdEditorRulesLayout;
         private CgdEditorPartsLayout _cgdEditorPartsLayout;
@@ -30,7 +29,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
         private void OnEnable()
         {
             _cgdEditorConfigurationLayout = new CgdEditorConfigurationLayout(this);
-            _cgdEditorEffectsLayout = new CgdEditorEffectsLayout(this);
             _cgdEditorPermutationsLayout = new CgdEditorPermutationsLayout(this);
             _cgdEditorRulesLayout = new CgdEditorRulesLayout(this);
             _cgdEditorPartsLayout = new CgdEditorPartsLayout(this);
@@ -67,7 +65,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 _focus = GUILayout.Toolbar(_focus, new[]
                 {
                     CgdLocalization.Localize(CgdLocalization.Phrase.Configuration),
-                    CgdLocalization.Localize(CgdLocalization.Phrase.Animations),
                     CgdLocalization.Localize(CgdLocalization.Phrase.HandGestures),
                     CgdLocalization.Localize(CgdLocalization.Phrase.Rules),
                     CgdLocalization.Localize(CgdLocalization.Phrase.Parts),
@@ -86,10 +83,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                 switch (_focus)
                 {
                     case 0: _cgdEditorConfigurationLayout.Layout(); break;
-                    case 1: _cgdEditorEffectsLayout.Layout(); break;
-                    case 2: _cgdEditorPermutationsLayout.Layout(); break;
-                    case 3: _cgdEditorRulesLayout.Layout(); break;
-                    case 4: _cgdEditorPartsLayout.Layout(); break;
+                    case 1: _cgdEditorPermutationsLayout.Layout(); break;
+                    case 2: _cgdEditorRulesLayout.Layout(); break;
+                    case 3: _cgdEditorPartsLayout.Layout(); break;
                 }
             }
             else

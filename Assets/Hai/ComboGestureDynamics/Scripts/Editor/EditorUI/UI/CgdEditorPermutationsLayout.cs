@@ -127,7 +127,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                             var rightEffect = elementRightSide.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression));
 
                             var previousObject = leftEffect.objectReferenceValue;
-                            var newObject = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Effect)), previousObject, typeof(CgdEffect), true);
+                            var newObject = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Effect)), previousObject, typeof(Motion), true);
                             if (newObject != previousObject)
                             {
                                 leftEffect.objectReferenceValue = newObject;
@@ -137,11 +137,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
                         else
                         {
                             EditorGUILayout.PropertyField(elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)), new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Effect)));
-                            var newMotion = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)), null, typeof(Motion)) as Motion;
+                            var newMotion = EditorGUILayout.ObjectField(new GUIContent(CgdLocalization.Localize(CgdLocalization.Phrase.Animation)), null, typeof(Motion)) as Motion; // FIXME this no longer needs to be a classic object field
                             if (newMotion != null)
                             {
-                                var generatedEffect = CgdEditorUiExtensions.FindOrCreateNewCgdEffectForMotion(_cgdEditor.cgd, newMotion);
-                                elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)).objectReferenceValue = generatedEffect;
+                                elementSelected.FindPropertyRelative(nameof(Cgd.PermutationEffectBehaviour.expression)).objectReferenceValue = newMotion;
                             }
                         }
 
@@ -243,8 +242,10 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor.EditorUI.UI
 
             var effect = _selectedRulesetNullable.permutationEffectBehaviours[permutation.ToPermutationEffectBehavioursArrayIndex()].expression;
 
-            var button = effect.clip != null
-                ? GUILayout.Button(_cgdEditor.renderQueue.RequireRender(effect.clip), GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2))
+            // FIXME RequireRender may be passed a blendtree, which will fail to render
+            var renderable = (AnimationClip) effect;
+            var button = effect != null
+                ? GUILayout.Button(_cgdEditor.renderQueue.RequireRender(renderable), GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2))
                 : GUILayout.Button(GUIContent.none, GUIStyle.none, GUILayout.Width(PermutationWidth), GUILayout.Height(PermutationHeight - EditorGUIUtility.singleLineHeight * 2));
             if (button)
             {

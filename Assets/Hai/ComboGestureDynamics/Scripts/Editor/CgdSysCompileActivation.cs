@@ -106,7 +106,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             }, part, inheritedEffect, whenFirstPartCreateDenyList, _cgdParameters).Compile();
         }
 
-        private CgdSys.CompiledEffect PermutationCompileFist(CgdPart part, Cgd.PropertyMask[] whenFirstPartCreateDenyList, Cgd.PermutationEffectBehaviour behaviour, Cgd.Expression rest, CgdSys.CompiledEffect inheritedEffect, Cgd.HandGesture.HandSide handSide)
+        private CgdSys.CompiledEffect PermutationCompileFist(CgdPart part, Cgd.PropertyMask[] whenFirstPartCreateDenyList, Cgd.PermutationEffectBehaviour behaviour, Motion rest, CgdSys.CompiledEffect inheritedEffect, Cgd.HandGesture.HandSide handSide)
         {
             // TODO: "Rest" is the inherited effect when the PermutationRuleset is a stencil
             return new CgdSysCompileEffectBehaviour(new Cgd.EffectBehaviour

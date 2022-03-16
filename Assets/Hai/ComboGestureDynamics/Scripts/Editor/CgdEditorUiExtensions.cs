@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Hai.ComboGestureDynamics.Scripts.Components;
-using Hai.ComboGestureDynamics.Scripts.Editor.EditorUI;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -23,17 +22,19 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .ToArray();
         }
 
-        private static EditorCurveBinding[] FindAllPropertiesOfExpression(Cgd.Expression expression)
+        private static EditorCurveBinding[] FindAllPropertiesOfExpression(Motion expression)
         {
-            // if (expression.effect != null)
-            // {
-                // return FindAllPropertiesOfEffect(expression);
-            // }
-            // else
-            // {
-                // FIXME: Expression null case
-                return expression.clip == null ? new EditorCurveBinding[0] : AnimationUtility.GetCurveBindings(expression.clip);
-            // }
+            switch (expression)
+            {
+                case BlendTree blend:
+                    return AllAnimationsOf(blend)
+                        .SelectMany(FindAllPropertiesOfExpression)
+                        .ToArray();
+                case AnimationClip clip:
+                    return AnimationUtility.GetCurveBindings(clip);
+                default:
+                    return new EditorCurveBinding[0];
+            }
         }
 
         private static EditorCurveBinding ToEditorCurveBinding(Cgd.PropertyMask propertyMask)
@@ -44,24 +45,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 type = propertyMask.type,
                 propertyName = propertyMask.propertyName
             };
-        }
-
-        private static EditorCurveBinding[] FindAllInsertedClipsProperties(CgdEffect effect)
-        {
-            return effect.regular.insertedClips
-                .SelectMany(insertedClip => AnimationUtility.GetCurveBindings(insertedClip.clip)
-                    .Where(binding => !insertedClip.rejectedProperties.Any(mask => CgdSysExtensions.IsSameAsBinding(mask, binding)))
-                    .ToArray())
-                .ToArray();
-        }
-
-        private static EditorCurveBinding[] FindAllInheritedEffectsProperties(CgdEffect effect)
-        {
-            return effect.regular.inheritedEffects
-                .SelectMany(inheritedEffect => FindAllPropertiesOfEffect(inheritedEffect.effect)
-                    .Where(binding => !inheritedEffect.rejectedProperties.Any(mask => CgdSysExtensions.IsSameAsBinding(mask, binding)))
-                    .ToArray())
-                .ToArray();
         }
 
         private static AnimationClip[] AllAnimationsOf(BlendTree blendTree)
@@ -81,15 +64,15 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 .ToArray();
         }
 
-        private static Cgd.Expression[] FindAllExpressions(Components.ComboGestureDynamics dynamics)
+        private static Motion[] FindAllExpressions(Components.ComboGestureDynamics dynamics)
         {
-            var mutableExpressions = new List<Cgd.Expression>();
+            var mutableExpressions = new List<Motion>();
             Iterate(mutableExpressions, dynamics.rootRule.transform);
             mutableExpressions.AddRange(dynamics.rootRule.effectBehaviour.DefensiveActiveExpressions());
             return mutableExpressions.ToArray();
         }
 
-        private static void Iterate(List<Cgd.Expression> mutableEffectsResult, Transform transformToIterate)
+        private static void Iterate(List<Motion> mutableEffectsResult, Transform transformToIterate)
         {
             foreach (Transform transforms in transformToIterate)
             {
@@ -285,58 +268,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
             return Enum.GetValues(enumType).Cast<Enum>().ToArray()
                 .Select(enumValue => CgdLocalization.EnumLocalize(enumValue, enumType))
                 .ToArray();
-        }
-
-        public static CgdEffect FindOrCreateNewCgdEffectForMotion(Components.ComboGestureDynamics cgd, Motion wantedMotion)
-        {
-            var matchingEffects = cgd.effectsLibrary.GetComponents<CgdEffect>().Where(effect =>
-            {
-                if (wantedMotion is BlendTree)
-                {
-                    return effect.effectType == Cgd.EffectType.Custom && effect.customBlendTree == wantedMotion;
-                }
-                else
-                {
-                    return effect.effectType == Cgd.EffectType.Regular
-                           && effect.regular.insertedClips.Length == 1
-                           && effect.regular.insertedClips[0].clip == wantedMotion;
-                }
-            }).ToArray();
-
-            // TODO: What to do if there is more than one matching effect?
-            if (matchingEffects.Length > 1)
-            {
-                return matchingEffects[0];
-            }
-
-            return CreateNewCgdEffectForMotion(cgd, wantedMotion);
-        }
-
-        private static CgdEffect CreateNewCgdEffectForMotion(Components.ComboGestureDynamics cgd, Motion newMotion)
-        {
-            var newItem = new GameObject(newMotion.name);
-            Undo.RegisterCreatedObjectUndo(newItem, CgdLocalization.Localize(CgdLocalization.Phrase.CreateNewMotionFromAnimation));
-            newItem.transform.parent = cgd.effectsLibrary;
-            var effect = Undo.AddComponent<CgdEffect>(newItem);
-            if (newMotion is BlendTree)
-            {
-                effect.effectType = Cgd.EffectType.Custom;
-                effect.customBlendTree = newMotion;
-            }
-            else
-            {
-                effect.effectType = Cgd.EffectType.Regular;
-                effect.regular.insertedClips = new[]
-                {
-                    new Cgd.InsertedClip
-                    {
-                        clip = (AnimationClip) newMotion,
-                        rejectedProperties = new Cgd.PropertyMask[0]
-                    }
-                };
-            }
-
-            return effect;
         }
     }
 }

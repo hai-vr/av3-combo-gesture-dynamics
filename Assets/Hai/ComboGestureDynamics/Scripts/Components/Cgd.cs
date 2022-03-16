@@ -22,13 +22,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         }
 
         [Serializable]
-        public struct InheritedEffect
-        {
-            public CgdEffect effect;
-            public PropertyMask[] rejectedProperties;
-        }
-
-        [Serializable]
         public enum ConditionType
         {
             HandGesture,
@@ -162,42 +155,6 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             }
         }
 
-        // [Serializable]
-        // public struct Blend
-        // {
-        //     public BlendType blendType;
-        //     public Position[] positions;
-        //
-        //     public void MutateAnyReferenceNormalize()
-        //     {
-        //         if (positions == null) positions = new Position[0];
-        //     }
-        // }
-
-        [Serializable]
-        public struct Position
-        {
-            public Vector2[] position;
-            public Expression expression;
-        }
-
-        [Serializable]
-        public struct Expression
-        {
-            public AnimationClip clip;
-            // public CgdEffect effect;
-
-            public bool IsDefined()
-            {
-                return clip != null; // || effect != null;
-            }
-
-            public void MutateAnyReferenceNormalize()
-            {
-                // effect.MutateAnyReferenceNormalize();
-            }
-        }
-
         [Serializable]
         public enum EffectType
         {
@@ -292,30 +249,28 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
             public string analogParameterName;
             public float analogMin; // = 0f;
             public float analogMax; // = 1f;
-            public Expression expression;
-            public Expression restOptional;
+            public Motion expression;
+            public Motion restOptional;
 
-            public Expression[] DefensiveActiveExpressions()
+            public Motion[] DefensiveActiveExpressions()
             {
                 switch (effectBehaviourType)
                 {
                     case EffectBehaviourType.Normal: return NonNull(new[] {expression});
                     case EffectBehaviourType.Analog: return NonNull(new[] {expression, restOptional});
-                    case EffectBehaviourType.None: return new Expression[0];
+                    case EffectBehaviourType.None: return new Motion[0];
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            private Expression[] NonNull(Expression[] things)
+            private Motion[] NonNull(Motion[] things)
             {
-                return things.Where(expression => expression.IsDefined()).ToArray();
+                return things.Where(expression => expression != null).ToArray();
             }
 
             public void MutateAnyReferenceNormalize()
             {
-                if (expression.IsDefined()) expression.MutateAnyReferenceNormalize();
-                if (restOptional.IsDefined()) restOptional.MutateAnyReferenceNormalize();
             }
         }
 
@@ -328,9 +283,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Components
         [Serializable]
         public struct PermutationEffectBehaviour
         {
-            public Expression expression;
-            public Expression expressionFistLeft;
-            public Expression expressionFistRight;
+            public Motion expression;
+            public Motion expressionFistLeft;
+            public Motion expressionFistRight;
             public TweeningType tweeningType;
             public Tweening tweening;
         }

@@ -34,12 +34,12 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 case Cgd.EffectBehaviourType.Analog:
                     var active = new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, _effectBehaviour.expression).Compile();
 
-                    if (_effectBehaviour.restOptional.clip == null && _previousEffectOptional == null)
+                    if (_effectBehaviour.restOptional == null && _previousEffectOptional == null)
                     {
                         return active; // FIXME: This is defensive
                     }
 
-                    var rest = _effectBehaviour.restOptional.clip != null ? new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, _effectBehaviour.restOptional).Compile() : _previousEffectOptional;
+                    var rest = _effectBehaviour.restOptional != null ? new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, _effectBehaviour.restOptional).Compile() : _previousEffectOptional;
 
                     return new CgdSys.CompiledEffect
                     {
@@ -57,7 +57,7 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 case Cgd.EffectBehaviourType.None:
                     // This might only be applicable for the Root Rule.
                     // Normally, None does not result in a compiled motion.
-                    return new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, new Cgd.Expression()).Compile();
+                    return new CgdSysCompileSingleEffect(_part, _denyListOnlyFirstPartNullable, _cgdParameters, new Motion()).Compile();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -93,9 +93,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
         private readonly CgdPart _part;
         private readonly Cgd.PropertyMask[] _denyListOnlyFirstPartNullable;
         private readonly CgdParameters _cgdParameters;
-        private readonly Cgd.Expression _effect;
+        private readonly Motion _effect;
 
-        public CgdSysCompileSingleEffect(CgdPart part, Cgd.PropertyMask[] denyListOnlyFirstPartNullable, CgdParameters cgdParameters, Cgd.Expression effect)
+        public CgdSysCompileSingleEffect(CgdPart part, Cgd.PropertyMask[] denyListOnlyFirstPartNullable, CgdParameters cgdParameters, Motion effect)
         {
             _part = part;
             _denyListOnlyFirstPartNullable = denyListOnlyFirstPartNullable;
@@ -110,28 +110,9 @@ namespace Hai.ComboGestureDynamics.Scripts.Editor
                 // TODO!!!!!!!!!!!
                 compiledMotion = null
             };
-
-            // switch (_effect.effectType)
-            // {
-            //     case Cgd.EffectType.Regular:
-            //         return new CgdSys.CompiledEffect
-            //         {
-            //             compiledMotion = CompileRegular(_effect.regular, new Cgd.PropertyMask[0], new[] {_effect.regular})
-            //         };
-            //     case Cgd.EffectType.Blend:
-            //         // TODO!!!!!!!!!!!!!!!!!!!!
-            //         if (true) return null;
-            //         break;
-            //     case Cgd.EffectType.Custom:
-            //         // TODO!!!!!!!!!!!!!!!!!!!!
-            //         if (true) return null;
-            //         break;
-            //     default:
-            //         throw new ArgumentOutOfRangeException();
-            // }
         }
 
-        private CgdSys.CompiledMotion CompileRegular(Cgd.Regular regular, Cgd.PropertyMask[] rejectedProperties, Cgd.Regular[] visitedRegular)
+        private CgdSys.CompiledMotion CompileRegular(Motion expression, Cgd.PropertyMask[] rejectedProperties)
         {
             var compiledMotion = regular.inheritedEffects
                 .Where(effect => effect.effect.effectType == Cgd.EffectType.Regular) // Regular can only inherit Regular effects
